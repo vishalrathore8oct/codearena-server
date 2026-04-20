@@ -18,7 +18,7 @@ app.use(express.urlencoded({ limit: "16kb", extended: true }));
 app.use(cookieParser());
 
 app.get("/", (req, res) => {
-  res.send("Welcome to CodeAreana Backend!");
+  res.send("Welcome to CodeArena Backend!");
 });
 
 export default app;

@@ -1,23 +1,45 @@
 {
-  "name": "codeareana-backend",
+  "name": "codearena-server",
   "version": "1.0.0",
-  "description": "CodeAreana Backend is a powerful and scalable backend application designed to support a competitive programming platform. It provides a comprehensive set of RESTful APIs for managing users, coding problems, playlists, submissions, and code execution.",
+  "description": "CodeArena Backend is a powerful and scalable backend application designed to support a competitive programming platform. It provides a comprehensive set of RESTful APIs for managing users, coding problems, playlists, submissions, and code execution.",
   "type": "module",
   "main": "src/main.js",
   "scripts": {
     "dev": "tsx watch src/main.ts",
     "build": "tsc",
-    "start": "node dist/main.js"
+    "start": "node dist/main.js",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.ts": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yml}": [
+      "prettier --write"
+    ]
   },
   "author": "Vishal Rathore",
   "license": "ISC",
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "^25.6.0",
+    "eslint": "^10.2.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.5",
+    "globals": "^17.5.0",
+    "husky": "^9.1.7",
+    "jiti": "^2.6.1",
+    "lint-staged": "^16.4.0",
+    "prettier": "^3.8.3",
     "tsx": "^4.21.0",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.58.2"
   },
   "dependencies": {
     "cookie-parser": "^1.4.7",
