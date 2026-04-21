@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 import http from "http";
 import app from "./app.js";
+import logger from "./logger/winston.logger.js";
 
 dotenv.config();
 
@@ -10,8 +11,9 @@ const httpServer = http.createServer(app);
 
 const startServer = () => {
   httpServer.listen(PORT, () => {
-    console.log(`⚙️  Server is running on port: ${PORT}
-🌐 Server URL: http://localhost:${PORT}`);
+    logger.info(
+      `⚙️ Server is running on port: ${PORT} && 🌐URL: http://localhost:${PORT}`,
+    );
   });
 };
 
