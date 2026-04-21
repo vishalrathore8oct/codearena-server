@@ -4,8 +4,19 @@ import type { Request, Response } from "express";
 import express from "express";
 import morganMiddleware from "./logger/morgan.logger.js";
 import { errorHandler } from "./middlewares/error.middleware.js";
+import {
+  swaggerDocument,
+  swaggerUi,
+} from "./middlewares/swagger.middleware.js";
 
 const app = express();
+
+app.use(morganMiddleware);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
+app.use(express.json({ limit: "16kb" }));
+app.use(express.urlencoded({ limit: "16kb", extended: true }));
+app.use(cookieParser());
 
 app.use(
   cors({
@@ -16,10 +27,6 @@ app.use(
     credentials: true,
   }),
 );
-app.use(express.json({ limit: "16kb" }));
-app.use(express.urlencoded({ limit: "16kb", extended: true }));
-app.use(cookieParser());
-app.use(morganMiddleware);
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Welcome to CodeArena Backend!");

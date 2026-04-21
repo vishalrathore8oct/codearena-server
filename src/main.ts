@@ -11,9 +11,8 @@ const httpServer = http.createServer(app);
 
 const startServer = () => {
   httpServer.listen(PORT, () => {
-    logger.info(
-      `⚙️ Server is running on port: ${PORT} && 🌐URL: http://localhost:${PORT}`,
-    );
+    logger.info(`🚀 Server running at http://localhost:${PORT}`);
+    logger.info(`📜 Swagger at http://localhost:${PORT}/api-docs`);
   });
 };
 
