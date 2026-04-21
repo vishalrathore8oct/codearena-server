@@ -8,6 +8,7 @@ import {
   swaggerDocument,
   swaggerUi,
 } from "./middlewares/swagger.middleware.js";
+import { ApiError } from "./utils/ApiError.js";
 import { asyncHandler } from "./utils/asyncHandler.js";
 
 const app = express();
@@ -46,6 +47,10 @@ app.get(
 
 app.get("/async-broken", async () => {
   await Promise.reject(new Error("Boom 💥"));
+});
+
+app.get("/test-apierror", () => {
+  throw new ApiError(500, "Bad Request");
 });
 
 app.use(errorHandler);
