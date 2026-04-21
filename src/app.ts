@@ -9,6 +9,7 @@ import {
   swaggerUi,
 } from "./middlewares/swagger.middleware.js";
 import { ApiError } from "./utils/ApiError.js";
+import { ApiResponse } from "./utils/ApiResponse.js";
 import { asyncHandler } from "./utils/asyncHandler.js";
 
 const app = express();
@@ -51,6 +52,11 @@ app.get("/async-broken", async () => {
 
 app.get("/test-apierror", () => {
   throw new ApiError(500, "Bad Request");
+});
+
+app.get("/user", (req, res) => {
+  const user = { id: 1, name: "Vishal" };
+  res.status(200).json(new ApiResponse(200, user, "User fetched successfully"));
 });
 
 app.use(errorHandler);
