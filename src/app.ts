@@ -8,6 +8,7 @@ import {
   swaggerDocument,
   swaggerUi,
 } from "./middlewares/swagger.middleware.js";
+import { asyncHandler } from "./utils/asyncHandler.js";
 
 const app = express();
 
@@ -34,6 +35,17 @@ app.get("/", (req: Request, res: Response) => {
 
 app.get("/error", () => {
   throw new Error("Test error 🚨");
+});
+
+app.get(
+  "/async-error",
+  asyncHandler(async () => {
+    throw new Error("Async error 🚨");
+  }),
+);
+
+app.get("/async-broken", async () => {
+  await Promise.reject(new Error("Boom 💥"));
 });
 
 app.use(errorHandler);
