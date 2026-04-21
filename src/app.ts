@@ -8,9 +8,11 @@ import {
   swaggerDocument,
   swaggerUi,
 } from "./middlewares/swagger.middleware.js";
+import { validate } from "./middlewares/validate.middleware.js";
 import { ApiError } from "./utils/ApiError.js";
 import { ApiResponse } from "./utils/ApiResponse.js";
 import { asyncHandler } from "./utils/asyncHandler.js";
+import { registerSchema } from "./validations/user.validation.js";
 
 const app = express();
 
@@ -58,6 +60,14 @@ app.get("/user", (req, res) => {
   const user = { id: 1, name: "Vishal" };
   res.status(200).json(new ApiResponse(200, user, "User fetched successfully"));
 });
+
+app.post(
+  "/register",
+  validate(registerSchema),
+  asyncHandler(async (req, res) => {
+    return res.json(new ApiResponse(201, req.body, "User registered"));
+  }),
+);
 
 app.use(errorHandler);
 
