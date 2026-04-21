@@ -2,6 +2,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import type { Request, Response } from "express";
 import express from "express";
+import { prisma } from "./db/prisma.js";
 import morganMiddleware from "./logger/morgan.logger.js";
 import { errorHandler } from "./middlewares/error.middleware.js";
 import {
@@ -66,6 +67,15 @@ app.post(
   validate(registerSchema),
   asyncHandler(async (req, res) => {
     return res.json(new ApiResponse(201, req.body, "User registered"));
+  }),
+);
+
+app.get(
+  "/db-test",
+  asyncHandler(async (req, res) => {
+    const users = await prisma.user.findMany();
+
+    return res.json(new ApiResponse(200, users));
   }),
 );
 
