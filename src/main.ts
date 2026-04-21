@@ -11,7 +11,7 @@ const httpServer = http.createServer(app);
 
 const startServer = () => {
   httpServer.listen(PORT, () => {
-    logger.info(`🚀 Server running at http://localhost:${PORT}`);
+    logger.info(`🚀 Server running at http://localhost:${PORT}/health-check`);
     logger.info(`📜 Swagger at http://localhost:${PORT}/api-docs`);
   });
 };
