@@ -1,4 +1,5 @@
 import winston from "winston";
+import { env } from "../config/env.js";
 
 const levels = {
   error: 0,
@@ -8,10 +9,7 @@ const levels = {
   debug: 4,
 };
 
-const level = () => {
-  const env = process.env.NODE_ENV || "development";
-  return env === "development" ? "debug" : "warn";
-};
+const level = () => (env.NODE_ENV === "development" ? "debug" : "warn");
 
 winston.addColors({
   error: "red",

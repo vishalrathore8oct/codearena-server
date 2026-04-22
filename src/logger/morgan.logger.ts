@@ -1,4 +1,5 @@
 import morgan from "morgan";
+import { env } from "../config/env.js";
 import logger from "./winston.logger.js";
 
 const stream = {
@@ -7,10 +8,7 @@ const stream = {
   },
 };
 
-const skip = () => {
-  const env = process.env.NODE_ENV || "development";
-  return env !== "development";
-};
+const skip = () => env.NODE_ENV !== "development";
 
 const morganMiddleware = morgan(":method :url :status :response-time ms", {
   stream,

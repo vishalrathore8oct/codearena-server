@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import logger from "../logger/winston.logger.js";
-import { ApiError } from "../utils/ApiError.js";
+import { ApiError } from "../utils/ApiError.utils.js";
 
 const errorHandler = (
   err: Error | ApiError,

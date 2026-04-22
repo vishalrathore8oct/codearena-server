@@ -2,6 +2,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import type { Request, Response } from "express";
 import express from "express";
+import { env } from "./config/env.js";
 import morganMiddleware from "./logger/morgan.logger.js";
 import { errorHandler } from "./middlewares/error.middleware.js";
 import {
@@ -19,10 +20,8 @@ app.use(express.urlencoded({ limit: "16kb", extended: true }));
 app.use(cookieParser());
 app.use(
   cors({
-    origin:
-      process.env.CORS_ORIGINS === "*"
-        ? "*"
-        : process.env.CORS_ORIGINS?.split(","),
+    origin: env.CORS_ORIGINS === "*" ? "*" : env.CORS_ORIGINS?.split(","),
+
     credentials: true,
   }),
 );
