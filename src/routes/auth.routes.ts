@@ -16,7 +16,7 @@ const authRoutes = Router();
 authRoutes.post("/register", validate(registerSchema), register);
 
 authRoutes.get(
-  "/verify-email/:token",
+  "/verify-email/:verificationToken",
   validate(verifyEmailSchema),
   verifyEmail,
 );

@@ -15,9 +15,9 @@ const registerSchema = z.object({
 
 const verifyEmailSchema = z.object({
   params: z.object({
-    token: z
+    verificationToken: z
       .string()
-      .min(10, "Invalid token")
+      .min(10, "Invalid verificationToken")
       .regex(/^[a-f0-9]+$/, "Token must be hex string"),
   }),
 });

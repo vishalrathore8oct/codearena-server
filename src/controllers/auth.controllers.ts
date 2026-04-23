@@ -26,11 +26,12 @@ const register = asyncHandler(async (req: Request, res: Response) => {
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  const { token, hashedToken, expiry } = generateEmailVerificationToken();
+  const { verificationToken, hashedToken, expiry } =
+    generateEmailVerificationToken();
   const baseUrl =
     process.env.APP_BASE_URL || `${req.protocol}://${req.get("host")}`;
 
-  const emailVerificationUrl = `${baseUrl}/api/v1/auth/verify-email/${token}`;
+  const emailVerificationUrl = `${baseUrl}/api/v1/auth/verify-email/${verificationToken}`;
 
   await prisma.user.create({
     data: {
@@ -65,13 +66,16 @@ const register = asyncHandler(async (req: Request, res: Response) => {
 });
 
 const verifyEmail = asyncHandler(async (req: Request, res: Response) => {
-  const token = req.params.token as string;
+  const verificationToken = req.params.verificationToken as string;
 
-  if (!token) {
+  if (!verificationToken) {
     throw new ApiError(400, "Verification token is missing");
   }
 
-  const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+  const hashedToken = crypto
+    .createHash("sha256")
+    .update(verificationToken)
+    .digest("hex");
 
   const user = await prisma.user.findFirst({
     where: {
@@ -106,9 +110,7 @@ const verifyEmail = asyncHandler(async (req: Request, res: Response) => {
     );
 });
 
-const login = asyncHandler(async (req: Request, res: Response) => {
-  res.status(200).json({ message: "User logged in successfully" });
-});
+const login = asyncHandler(async (_req: Request, _res: Response) => {});
 
 const logout = asyncHandler(async (req: Request, res: Response) => {
   res.status(200).json({ message: "User logged out successfully" });
