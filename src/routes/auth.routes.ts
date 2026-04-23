@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  getCurrentUser,
   login,
   logout,
   refreshAccessToken,
@@ -34,5 +35,7 @@ authRoutes.post(
 );
 
 authRoutes.post("/logout", requireAuth, logout);
+
+authRoutes.get("/current-user", requireAuth, getCurrentUser);
 
 export default authRoutes;
