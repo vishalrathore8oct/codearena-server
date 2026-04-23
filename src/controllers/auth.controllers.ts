@@ -1,9 +1,12 @@
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import type { CookieOptions, Request, Response } from "express";
+import jwt from "jsonwebtoken";
+import { env } from "../config/env.js";
 import { appName } from "../constant.js";
 import { prisma } from "../db/prisma.js";
 import { sendEmail } from "../services/email.service.js";
+import type { JwtPayload } from "../types/jwt.types.js";
 import { ApiError } from "../utils/ApiError.utils.js";
 import { ApiResponse } from "../utils/ApiResponse.utils.js";
 import { asyncHandler } from "../utils/asyncHandler.utils.js";
@@ -204,8 +207,88 @@ const login = asyncHandler(async (req: Request, res: Response) => {
     );
 });
 
+const refreshAccessToken = asyncHandler(async (req: Request, res: Response) => {
+  let incomingRefreshToken: string | undefined;
+
+  if (req.cookies?.refreshToken) {
+    incomingRefreshToken = req.cookies.refreshToken;
+  } else if (req.body?.refreshToken) {
+    incomingRefreshToken = req.body.refreshToken;
+  } else if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer ")
+  ) {
+    incomingRefreshToken = req.headers.authorization.split(" ")[1];
+  }
+
+  if (!incomingRefreshToken) {
+    throw new ApiError(401, "Refresh token is required");
+  }
+
+  let decoded: JwtPayload;
+  try {
+    decoded = jwt.verify(
+      incomingRefreshToken,
+      env.REFRESH_TOKEN_SECRET,
+    ) as JwtPayload;
+  } catch {
+    throw new ApiError(401, "Invalid or expired refresh token");
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: decoded.id },
+  });
+
+  if (!user || !user.refreshToken) {
+    throw new ApiError(401, "User not found or no refresh token stored");
+  }
+
+  const isValid = await bcrypt.compare(incomingRefreshToken, user.refreshToken);
+
+  if (!isValid) {
+    throw new ApiError(401, "Refresh token mismatch or reused token detected");
+  }
+
+  const newAccessToken = generateAccessToken(user.id);
+  const newRefreshToken = generateRefreshToken(user.id);
+
+  const hashedRefreshToken = await bcrypt.hash(newRefreshToken, 10);
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { refreshToken: hashedRefreshToken },
+  });
+
+  const options: CookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+  };
+
+  return res
+    .status(200)
+    .cookie("accessToken", newAccessToken, {
+      ...options,
+      maxAge: 15 * 60 * 1000,
+    })
+    .cookie("refreshToken", newRefreshToken, {
+      ...options,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    })
+    .json(
+      new ApiResponse(
+        200,
+        {
+          accessToken: newAccessToken,
+          refreshToken: newRefreshToken,
+        },
+        "Access token refreshed or rotated successfully",
+      ),
+    );
+});
+
 const logout = asyncHandler(async (req: Request, res: Response) => {
   res.status(200).json({ message: "User logged out successfully" });
 });
 
-export { login, logout, register, verifyEmail };
+export { login, logout, refreshAccessToken, register, verifyEmail };

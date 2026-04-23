@@ -30,4 +30,18 @@ const loginSchema = z.object({
   }),
 });
 
-export { loginSchema, registerSchema, verifyEmailSchema };
+const refreshTokenSchema = z.object({
+  body: z
+    .object({
+      refreshToken: z.string().optional(),
+    })
+    .optional(),
+
+  headers: z
+    .object({
+      authorization: z.string().optional(),
+    })
+    .optional(),
+});
+
+export { loginSchema, refreshTokenSchema, registerSchema, verifyEmailSchema };

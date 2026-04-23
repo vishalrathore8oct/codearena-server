@@ -2,12 +2,14 @@ import { Router } from "express";
 import {
   login,
   logout,
+  refreshAccessToken,
   register,
   verifyEmail,
 } from "../controllers/auth.controllers.js";
 import { validate } from "../middlewares/validate.middleware.js";
 import {
   loginSchema,
+  refreshTokenSchema,
   registerSchema,
   verifyEmailSchema,
 } from "../validations/auth.validation.js";
@@ -23,6 +25,12 @@ authRoutes.get(
 );
 
 authRoutes.post("/login", validate(loginSchema), login);
+
+authRoutes.post(
+  "/refresh-token",
+  validate(refreshTokenSchema),
+  refreshAccessToken,
+);
 
 authRoutes.post("/logout", logout);
 
