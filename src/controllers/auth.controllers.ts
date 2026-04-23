@@ -1,4 +1,5 @@
 import bcrypt from "bcrypt";
+import crypto from "crypto";
 import type { Request, Response } from "express";
 import { appName } from "../constant.js";
 import { prisma } from "../db/prisma.js";
@@ -8,10 +9,6 @@ import { ApiResponse } from "../utils/ApiResponse.utils.js";
 import { asyncHandler } from "../utils/asyncHandler.utils.js";
 import { emailVerificationTemplate } from "../utils/emailTemplates.utils.js";
 import { generateEmailVerificationToken } from "../utils/emailToken.utils.js";
-import {
-  generateAccessToken,
-  generateRefreshToken,
-} from "../utils/jwtTokens.utils.js";
 import { generateUniqueUsernameForDB } from "../utils/usernameGenerator.utils.js";
 
 const register = asyncHandler(async (req: Request, res: Response) => {
@@ -35,7 +32,7 @@ const register = asyncHandler(async (req: Request, res: Response) => {
 
   const emailVerificationUrl = `${baseUrl}/api/v1/auth/verify-email/${token}`;
 
-  const user = await prisma.user.create({
+  await prisma.user.create({
     data: {
       fullName,
       username,
@@ -43,14 +40,6 @@ const register = asyncHandler(async (req: Request, res: Response) => {
       password: hashedPassword,
       emailVerificationToken: hashedToken,
       emailVerificationTokenExpiresAt: expiry,
-    },
-    select: {
-      id: true,
-      fullName: true,
-      username: true,
-      email: true,
-      role: true,
-      createdAt: true,
     },
   });
 
@@ -64,37 +53,55 @@ const register = asyncHandler(async (req: Request, res: Response) => {
     ),
   });
 
-  const accessToken = generateAccessToken(user.id);
-  const refreshToken = generateRefreshToken(user.id);
-
-  const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
-
-  await prisma.user.update({
-    where: { id: user.id },
-    data: { refreshToken: hashedRefreshToken },
-  });
-
-  res.cookie("accessToken", accessToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-    maxAge: 15 * 60 * 1000, // 15 minutes
-  });
-
-  res.cookie("refreshToken", refreshToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-  });
-
   return res
     .status(201)
     .json(
       new ApiResponse(
         201,
-        { user, accessToken, refreshToken },
-        "User registered successfully",
+        null,
+        "Users registered successfully and verification email has been sent on your email. Please verify your email to activate your account.",
+      ),
+    );
+});
+
+const verifyEmail = asyncHandler(async (req: Request, res: Response) => {
+  const token = req.params.token as string;
+
+  if (!token) {
+    throw new ApiError(400, "Verification token is missing");
+  }
+
+  const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+  const user = await prisma.user.findFirst({
+    where: {
+      emailVerificationToken: hashedToken,
+      emailVerificationTokenExpiresAt: {
+        gt: new Date(),
+      },
+    },
+  });
+
+  if (!user) {
+    throw new ApiError(400, "Invalid or expired verification token");
+  }
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      isEmailVerified: true,
+      emailVerificationToken: null,
+      emailVerificationTokenExpiresAt: null,
+    },
+  });
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        null,
+        "Email verified successfully. You can now log in to your account.",
       ),
     );
 });
@@ -107,4 +114,4 @@ const logout = asyncHandler(async (req: Request, res: Response) => {
   res.status(200).json({ message: "User logged out successfully" });
 });
 
-export { login, logout, register };
+export { login, logout, register, verifyEmail };

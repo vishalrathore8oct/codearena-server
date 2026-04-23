@@ -13,4 +13,13 @@ const registerSchema = z.object({
   }),
 });
 
-export { registerSchema };
+const verifyEmailSchema = z.object({
+  params: z.object({
+    token: z
+      .string()
+      .min(10, "Invalid token")
+      .regex(/^[a-f0-9]+$/, "Token must be hex string"),
+  }),
+});
+
+export { registerSchema, verifyEmailSchema };
