@@ -288,7 +288,51 @@ const refreshAccessToken = asyncHandler(async (req: Request, res: Response) => {
 });
 
 const logout = asyncHandler(async (req: Request, res: Response) => {
-  res.status(200).json({ message: "User logged out successfully" });
+  let userId: string | undefined;
+
+  if (req.user?.id) {
+    userId = req.user.id;
+  } else {
+    const token =
+      req.cookies?.refreshToken ||
+      req.body?.refreshToken ||
+      (req.headers.authorization?.startsWith("Bearer ")
+        ? req.headers.authorization.split(" ")[1]
+        : undefined);
+
+    if (token) {
+      try {
+        const decoded = jwt.verify(
+          token,
+          env.REFRESH_TOKEN_SECRET,
+        ) as JwtPayload;
+        userId = decoded.id;
+      } catch {
+        // ignore invalid token → just clear cookies
+      }
+    }
+  }
+
+  if (userId) {
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        refreshToken: null,
+      },
+    });
+  }
+
+  const options: CookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+  };
+
+  return res
+    .status(200)
+    .clearCookie("accessToken", options)
+    .clearCookie("refreshToken", options)
+    .json(new ApiResponse(200, null, "User logged out successfully"));
 });
 
 export { login, logout, refreshAccessToken, register, verifyEmail };

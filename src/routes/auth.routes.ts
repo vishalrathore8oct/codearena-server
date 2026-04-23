@@ -6,6 +6,7 @@ import {
   register,
   verifyEmail,
 } from "../controllers/auth.controllers.js";
+import { requireAuth } from "../middlewares/auth.middleware.js";
 import { validate } from "../middlewares/validate.middleware.js";
 import {
   loginSchema,
@@ -32,6 +33,6 @@ authRoutes.post(
   refreshAccessToken,
 );
 
-authRoutes.post("/logout", logout);
+authRoutes.post("/logout", requireAuth, logout);
 
 export default authRoutes;
