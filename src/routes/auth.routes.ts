@@ -7,6 +7,7 @@ import {
 } from "../controllers/auth.controllers.js";
 import { validate } from "../middlewares/validate.middleware.js";
 import {
+  loginSchema,
   registerSchema,
   verifyEmailSchema,
 } from "../validations/auth.validation.js";
@@ -21,7 +22,7 @@ authRoutes.get(
   verifyEmail,
 );
 
-authRoutes.post("/login", login);
+authRoutes.post("/login", validate(loginSchema), login);
 
 authRoutes.post("/logout", logout);
 

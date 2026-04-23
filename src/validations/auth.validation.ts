@@ -22,4 +22,12 @@ const verifyEmailSchema = z.object({
   }),
 });
 
-export { registerSchema, verifyEmailSchema };
+const loginSchema = z.object({
+  body: z.object({
+    email: z.email("Invalid email address").toLowerCase(),
+
+    password: z.string().min(6, "Password must be at least 6 characters"),
+  }),
+});
+
+export { loginSchema, registerSchema, verifyEmailSchema };
