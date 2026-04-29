@@ -8,6 +8,7 @@ import {
   register,
   resendVerificationEmail,
   resetPassword,
+  updateUserProfile,
   verifyEmail,
 } from "../controllers/auth.controllers.js";
 import { requireAuth } from "../middlewares/authentication.middleware.js";
@@ -19,6 +20,7 @@ import {
   registerSchema,
   resendVerificationSchema,
   resetPasswordSchema,
+  updateProfileSchema,
   verifyEmailSchema,
 } from "../validations/auth.validation.js";
 
@@ -60,6 +62,13 @@ authRoutes.post(
   "/reset-password/:verificationToken",
   validate(resetPasswordSchema),
   resetPassword,
+);
+
+authRoutes.patch(
+  "/update-profile",
+  requireAuth,
+  validate(updateProfileSchema),
+  updateUserProfile,
 );
 
 export default authRoutes;

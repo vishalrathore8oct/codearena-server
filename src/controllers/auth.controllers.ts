@@ -538,6 +538,59 @@ const resetPassword = asyncHandler(async (req: Request, res: Response) => {
     .json(new ApiResponse(200, null, "Password reset successfully"));
 });
 
+const updateUserProfile = asyncHandler(async (req: Request, res: Response) => {
+  const userId = req.user?.id;
+
+  if (!userId) {
+    throw new ApiError(401, "Unauthorized User");
+  }
+
+  const { fullName, username, image } = req.body;
+
+  if (username) {
+    const existing = await prisma.user.findUnique({
+      where: { username },
+    });
+
+    if (existing && existing.id !== userId) {
+      throw new ApiError(
+        400,
+        "Username already taken, please try with another one",
+      );
+    }
+  }
+
+  const updatedUser = await prisma.user.update({
+    where: { id: userId },
+    data: {
+      ...(fullName && { fullName }),
+      ...(username && { username }),
+      ...(image && { image }),
+    },
+    select: {
+      id: true,
+      fullName: true,
+      username: true,
+      email: true,
+      image: true,
+      role: true,
+      isEmailVerified: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { user: updatedUser },
+        "User profile updated successfully",
+      ),
+    );
+});
+
 export {
   forgotPassword,
   getUserProfile,
@@ -547,5 +600,6 @@ export {
   register,
   resendVerificationEmail,
   resetPassword,
+  updateUserProfile,
   verifyEmail,
 };
