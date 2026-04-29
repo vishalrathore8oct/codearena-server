@@ -7,6 +7,7 @@ import {
   refreshAccessToken,
   register,
   resendVerificationEmail,
+  resetPassword,
   verifyEmail,
 } from "../controllers/auth.controllers.js";
 import { requireAuth } from "../middlewares/auth.middleware.js";
@@ -17,6 +18,7 @@ import {
   refreshTokenSchema,
   registerSchema,
   resendVerificationSchema,
+  resetPasswordSchema,
   verifyEmailSchema,
 } from "../validations/auth.validation.js";
 
@@ -52,6 +54,12 @@ authRoutes.post(
   "/forgot-password",
   validate(forgotPasswordSchema),
   forgotPassword,
+);
+
+authRoutes.post(
+  "/reset-password/:verificationToken",
+  validate(resetPasswordSchema),
+  resetPassword,
 );
 
 export default authRoutes;

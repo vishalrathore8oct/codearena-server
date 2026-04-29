@@ -62,11 +62,24 @@ const forgotPasswordSchema = z.object({
   }),
 });
 
+const resetPasswordSchema = z.object({
+  params: z.object({
+    verificationToken: z
+      .string()
+      .min(10, "Invalid verificationToken")
+      .regex(/^[a-f0-9]+$/, "Token must be hex string"),
+  }),
+  body: z.object({
+    password: z.string().min(6, "Password must be at least 6 characters"),
+  }),
+});
+
 export {
   forgotPasswordSchema,
   loginSchema,
   refreshTokenSchema,
   registerSchema,
   resendVerificationSchema,
+  resetPasswordSchema,
   verifyEmailSchema,
 };

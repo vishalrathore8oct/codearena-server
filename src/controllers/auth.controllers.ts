@@ -14,7 +14,10 @@ import {
   emailVerificationTemplate,
   forgotPasswordTemplate,
 } from "../utils/emailTemplates.utils.js";
-import { generateEmailVerificationToken } from "../utils/emailToken.utils.js";
+import {
+  generateEmailVerificationToken,
+  hashToken,
+} from "../utils/emailToken.utils.js";
 import {
   generateAccessToken,
   generateRefreshToken,
@@ -494,6 +497,50 @@ const forgotPassword = asyncHandler(async (req: Request, res: Response) => {
     );
 });
 
+const resetPassword = asyncHandler(async (req: Request, res: Response) => {
+  const verificationToken = req.params.verificationToken as string;
+  const { password } = req.body;
+
+  if (!verificationToken) {
+    throw new ApiError(400, "Reset token is required");
+  }
+
+  if (!password) {
+    throw new ApiError(400, "New password is required");
+  }
+
+  const hashedToken = hashToken(verificationToken);
+
+  const user = await prisma.user.findFirst({
+    where: {
+      passwordResetToken: hashedToken,
+      passwordResetTokenExpiresAt: {
+        gt: new Date(),
+      },
+    },
+  });
+
+  if (!user) {
+    throw new ApiError(400, "Invalid or expired reset token");
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      password: hashedPassword,
+      passwordResetToken: null,
+      passwordResetTokenExpiresAt: null,
+      refreshToken: null,
+    },
+  });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, null, "Password reset successfully"));
+});
+
 export {
   forgotPassword,
   getCurrentUser,
@@ -502,5 +549,6 @@ export {
   refreshAccessToken,
   register,
   resendVerificationEmail,
+  resetPassword,
   verifyEmail,
 };
