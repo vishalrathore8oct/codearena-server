@@ -1,9 +1,9 @@
 import bcrypt from "bcrypt";
 import crypto from "crypto";
-import type { CookieOptions, Request, Response } from "express";
+import type { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { env } from "../config/env.js";
-import { appName } from "../constant.js";
+import { appName, cookieOptions } from "../constant.js";
 import { prisma } from "../db/prisma.js";
 import { sendEmail } from "../services/email.service.js";
 import type { AuthUser } from "../types/auth.types.js";
@@ -179,20 +179,14 @@ const login = asyncHandler(async (req: Request, res: Response) => {
     },
   });
 
-  const options: CookieOptions = {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-  };
-
   return res
     .status(200)
     .cookie("accessToken", accessToken, {
-      ...options,
+      ...cookieOptions,
       maxAge: 15 * 60 * 1000,
     })
     .cookie("refreshToken", refreshToken, {
-      ...options,
+      ...cookieOptions,
       maxAge: 7 * 24 * 60 * 60 * 1000,
     })
     .json(
@@ -270,20 +264,14 @@ const refreshAccessToken = asyncHandler(async (req: Request, res: Response) => {
     data: { refreshToken: hashedRefreshToken },
   });
 
-  const options: CookieOptions = {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-  };
-
   return res
     .status(200)
     .cookie("accessToken", newAccessToken, {
-      ...options,
+      ...cookieOptions,
       maxAge: 15 * 60 * 1000,
     })
     .cookie("refreshToken", newRefreshToken, {
-      ...options,
+      ...cookieOptions,
       maxAge: 7 * 24 * 60 * 60 * 1000,
     })
     .json(
@@ -330,16 +318,10 @@ const logout = asyncHandler(async (req: Request, res: Response) => {
     });
   }
 
-  const options: CookieOptions = {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-  };
-
   return res
     .status(200)
-    .clearCookie("accessToken", options)
-    .clearCookie("refreshToken", options)
+    .clearCookie("accessToken", cookieOptions)
+    .clearCookie("refreshToken", cookieOptions)
     .json(new ApiResponse(200, null, "User logged out successfully"));
 });
 
@@ -610,7 +592,67 @@ const updateUserProfile = asyncHandler(async (req: Request, res: Response) => {
     );
 });
 
+const changePassword = asyncHandler(async (req: Request, res: Response) => {
+  const userId = req.user?.id;
+
+  if (!userId) {
+    throw new ApiError(401, "Unauthorized");
+  }
+
+  const { currentPassword, newPassword } = req.body;
+
+  if (!currentPassword || !newPassword) {
+    throw new ApiError(400, "Current and new password are required");
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  const isMatch = await bcrypt.compare(currentPassword, user.password);
+
+  if (!isMatch) {
+    throw new ApiError(400, "Current password is incorrect");
+  }
+
+  const isSame = await bcrypt.compare(newPassword, user.password);
+
+  if (isSame) {
+    throw new ApiError(
+      400,
+      "New password must be different from current password",
+    );
+  }
+
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: {
+      password: hashedPassword,
+      refreshToken: null,
+    },
+  });
+
+  return res
+    .status(200)
+    .clearCookie("accessToken", cookieOptions)
+    .clearCookie("refreshToken", cookieOptions)
+    .json(
+      new ApiResponse(
+        200,
+        null,
+        "Password changed successfully. Please login again.",
+      ),
+    );
+});
+
 export {
+  changePassword,
   forgotPassword,
   getUserProfile,
   login,

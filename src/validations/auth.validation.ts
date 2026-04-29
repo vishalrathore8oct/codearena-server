@@ -86,7 +86,18 @@ const updateProfileSchema = z.object({
   }),
 });
 
+const changePasswordSchema = z.object({
+  body: z.object({
+    currentPassword: z.string().min(6, "Current password is required").trim(),
+    newPassword: z
+      .string()
+      .min(6, "New password must be at least 6 characters")
+      .trim(),
+  }),
+});
+
 export {
+  changePasswordSchema,
   forgotPasswordSchema,
   loginSchema,
   refreshTokenSchema,

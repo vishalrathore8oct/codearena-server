@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  changePassword,
   forgotPassword,
   getUserProfile,
   login,
@@ -15,6 +16,7 @@ import { requireAuth } from "../middlewares/authentication.middleware.js";
 import { upload } from "../middlewares/upload.middleware.js";
 import { validate } from "../middlewares/validate.middleware.js";
 import {
+  changePasswordSchema,
   forgotPasswordSchema,
   loginSchema,
   refreshTokenSchema,
@@ -71,6 +73,13 @@ authRoutes.patch(
   upload.single("image"),
   validate(updateProfileSchema),
   updateUserProfile,
+);
+
+authRoutes.post(
+  "/change-password",
+  requireAuth,
+  validate(changePasswordSchema),
+  changePassword,
 );
 
 export default authRoutes;
