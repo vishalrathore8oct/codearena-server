@@ -1,7 +1,7 @@
 import { Router } from "express";
 import {
   forgotPassword,
-  getCurrentUser,
+  getUserProfile,
   login,
   logout,
   refreshAccessToken,
@@ -42,7 +42,7 @@ authRoutes.post(
 
 authRoutes.post("/logout", requireAuth, logout);
 
-authRoutes.get("/current-user", requireAuth, getCurrentUser);
+authRoutes.get("/get-user-profile", requireAuth, getUserProfile);
 
 authRoutes.post(
   "/resend-verification-email",

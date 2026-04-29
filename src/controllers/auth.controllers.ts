@@ -341,7 +341,7 @@ const logout = asyncHandler(async (req: Request, res: Response) => {
     .json(new ApiResponse(200, null, "User logged out successfully"));
 });
 
-const getCurrentUser = asyncHandler(async (req: Request, res: Response) => {
+const getUserProfile = asyncHandler(async (req: Request, res: Response) => {
   const userId = req.user?.id;
 
   if (!userId) {
@@ -540,7 +540,7 @@ const resetPassword = asyncHandler(async (req: Request, res: Response) => {
 
 export {
   forgotPassword,
-  getCurrentUser,
+  getUserProfile,
   login,
   logout,
   refreshAccessToken,
