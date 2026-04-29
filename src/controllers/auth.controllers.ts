@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import crypto from "crypto";
 import type { Request, Response } from "express";
 import jwt from "jsonwebtoken";
+import type { Prisma } from "../../generated/prisma/client.js";
 import { env } from "../config/env.js";
 import { appName, cookieOptions } from "../constant.js";
 import { prisma } from "../db/prisma.js";
@@ -651,26 +652,87 @@ const changePassword = asyncHandler(async (req: Request, res: Response) => {
     );
 });
 
-const getAllUsers = asyncHandler(async (_req: Request, res: Response) => {
-  const users = await prisma.user.findMany({
-    select: {
-      id: true,
-      fullName: true,
-      username: true,
-      email: true,
-      image: true,
-      role: true,
-      isEmailVerified: true,
-      createdAt: true,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+const getAllUsers = asyncHandler(async (req: Request, res: Response) => {
+  const page = Number(req.query.page) || 1;
+  const limit = Math.min(Number(req.query.limit) || 10, 50);
+  const skip = (page - 1) * limit;
 
-  return res
-    .status(200)
-    .json(new ApiResponse(200, users, "Users fetched successfully"));
+  const search = (req.query.search as string) || "";
+
+  const role = req.query.role as "ADMIN" | "USER" | undefined;
+
+  const sortBy = (req.query.sortBy as string) || "createdAt";
+  const order = (req.query.order as "asc" | "desc") || "desc";
+
+  const where: Prisma.UserWhereInput = {
+    ...(search && {
+      OR: [
+        {
+          fullName: {
+            contains: search,
+            mode: "insensitive",
+          },
+        },
+        {
+          username: {
+            contains: search,
+            mode: "insensitive",
+          },
+        },
+        {
+          email: {
+            contains: search,
+            mode: "insensitive",
+          },
+        },
+      ],
+    }),
+
+    ...(role && {
+      role,
+    }),
+  };
+
+  const [users, totalUsers] = await Promise.all([
+    prisma.user.findMany({
+      where,
+      skip,
+      take: limit,
+      orderBy: {
+        [sortBy]: order,
+      },
+      select: {
+        id: true,
+        fullName: true,
+        username: true,
+        email: true,
+        image: true,
+        role: true,
+        isEmailVerified: true,
+        createdAt: true,
+      },
+    }),
+
+    prisma.user.count({ where }),
+  ]);
+
+  const totalPages = Math.ceil(totalUsers / limit);
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        users,
+        pagination: {
+          totalUsers,
+          totalPages,
+          currentPage: page,
+          limit,
+        },
+      },
+      "Users fetched successfully",
+    ),
+  );
 });
 
 export {
