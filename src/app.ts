@@ -10,6 +10,7 @@ import {
   swaggerUi,
 } from "./middlewares/swagger.middleware.js";
 import authRoutes from "./routes/auth.routes.js";
+import problemRoutes from "./routes/problem.routes.js";
 
 const app = express();
 
@@ -36,6 +37,7 @@ app.get("/health-check", (req: Request, res: Response) => {
 });
 
 app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/problems", problemRoutes);
 
 app.use(errorHandler);
 
