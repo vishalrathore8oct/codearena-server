@@ -10,6 +10,7 @@ import type { AuthUser } from "../types/auth.types.js";
 import { ApiError } from "../utils/ApiError.utils.js";
 import { ApiResponse } from "../utils/ApiResponse.utils.js";
 import { asyncHandler } from "../utils/asyncHandler.utils.js";
+import { deleteFromCloudinary } from "../utils/deleteFromCloudinary.utils.js";
 import {
   emailVerificationTemplate,
   forgotPasswordTemplate,
@@ -22,8 +23,8 @@ import {
   generateAccessToken,
   generateRefreshToken,
 } from "../utils/jwtTokens.utils.js";
-import { generateUniqueUsernameForDB } from "../utils/usernameGenerator.utils.js";
 import { uploadToCloudinary } from "../utils/uploadToCloudinary.utils.js";
+import { generateUniqueUsernameForDB } from "../utils/usernameGenerator.utils.js";
 
 const register = asyncHandler(async (req: Request, res: Response) => {
   const { fullName, email, password } = req.body;
@@ -546,11 +547,22 @@ const updateUserProfile = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(401, "Unauthorized User");
   }
 
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
   const { fullName, username } = req.body;
 
   let imageUrl: string | undefined;
 
   if (req.file) {
+    if (user?.image) {
+      await deleteFromCloudinary(user.image);
+    }
     imageUrl = await uploadToCloudinary(req.file.buffer);
   }
 

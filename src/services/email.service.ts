@@ -2,6 +2,7 @@ import Mailgen from "mailgen";
 import nodemailer from "nodemailer";
 import { env } from "../config/env.js";
 import { appName } from "../constant.js";
+import logger from "../logger/winston.logger.js";
 import { ApiError } from "../utils/ApiError.utils.js";
 
 const transporter = nodemailer.createTransport({
@@ -42,10 +43,12 @@ export const sendEmail = async ({
       text,
       html,
     });
-
-    console.log("✅ Email sent successfully");
+    logger.info(`✅ Email sent to ${to} with subject "${subject}"`);
   } catch (error: unknown) {
-    console.log("❌ Email failed:", error);
+    logger.error(
+      `❌ Email failed to send to ${to} with subject "${subject}":`,
+      error,
+    );
 
     throw new ApiError(500, "Failed to send email");
   }
