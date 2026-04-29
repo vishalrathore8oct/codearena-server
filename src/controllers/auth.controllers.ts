@@ -651,9 +651,32 @@ const changePassword = asyncHandler(async (req: Request, res: Response) => {
     );
 });
 
+const getAllUsers = asyncHandler(async (_req: Request, res: Response) => {
+  const users = await prisma.user.findMany({
+    select: {
+      id: true,
+      fullName: true,
+      username: true,
+      email: true,
+      image: true,
+      role: true,
+      isEmailVerified: true,
+      createdAt: true,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, users, "Users fetched successfully"));
+});
+
 export {
   changePassword,
   forgotPassword,
+  getAllUsers,
   getUserProfile,
   login,
   logout,

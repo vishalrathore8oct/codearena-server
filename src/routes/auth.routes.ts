@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   changePassword,
   forgotPassword,
+  getAllUsers,
   getUserProfile,
   login,
   logout,
@@ -13,6 +14,7 @@ import {
   verifyEmail,
 } from "../controllers/auth.controllers.js";
 import { requireAuth } from "../middlewares/authentication.middleware.js";
+import { authorize } from "../middlewares/authorization.middleware.js";
 import { upload } from "../middlewares/upload.middleware.js";
 import { validate } from "../middlewares/validate.middleware.js";
 import {
@@ -80,6 +82,13 @@ authRoutes.post(
   requireAuth,
   validate(changePasswordSchema),
   changePassword,
+);
+
+authRoutes.get(
+  "/admin/get-all-users",
+  requireAuth,
+  authorize("ADMIN"),
+  getAllUsers,
 );
 
 export default authRoutes;
