@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  forgotPassword,
   getCurrentUser,
   login,
   logout,
@@ -11,9 +12,11 @@ import {
 import { requireAuth } from "../middlewares/auth.middleware.js";
 import { validate } from "../middlewares/validate.middleware.js";
 import {
+  forgotPasswordSchema,
   loginSchema,
   refreshTokenSchema,
   registerSchema,
+  resendVerificationSchema,
   verifyEmailSchema,
 } from "../validations/auth.validation.js";
 
@@ -39,6 +42,16 @@ authRoutes.post("/logout", requireAuth, logout);
 
 authRoutes.get("/current-user", requireAuth, getCurrentUser);
 
-authRoutes.post("/resend-verification-email", resendVerificationEmail);
+authRoutes.post(
+  "/resend-verification-email",
+  validate(resendVerificationSchema),
+  resendVerificationEmail,
+);
+
+authRoutes.post(
+  "/forgot-password",
+  validate(forgotPasswordSchema),
+  forgotPassword,
+);
 
 export default authRoutes;

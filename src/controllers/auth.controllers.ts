@@ -10,7 +10,10 @@ import type { JwtPayload } from "../types/jwt.types.js";
 import { ApiError } from "../utils/ApiError.utils.js";
 import { ApiResponse } from "../utils/ApiResponse.utils.js";
 import { asyncHandler } from "../utils/asyncHandler.utils.js";
-import { emailVerificationTemplate } from "../utils/emailTemplates.utils.js";
+import {
+  emailVerificationTemplate,
+  forgotPasswordTemplate,
+} from "../utils/emailTemplates.utils.js";
 import { generateEmailVerificationToken } from "../utils/emailToken.utils.js";
 import {
   generateAccessToken,
@@ -432,7 +435,67 @@ const resendVerificationEmail = asyncHandler(
   },
 );
 
+const forgotPassword = asyncHandler(async (req: Request, res: Response) => {
+  const { email } = req.body;
+
+  if (!email) {
+    throw new ApiError(400, "Email is required");
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { email },
+  });
+
+  if (!user) {
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          null,
+          "If an account exists, a password reset link has been sent",
+        ),
+      );
+  }
+
+  const { verificationToken, hashedToken, expiry } =
+    generateEmailVerificationToken();
+  const baseUrl =
+    process.env.APP_BASE_URL || `${req.protocol}://${req.get("host")}`;
+
+  const emailVerificationUrl = `${baseUrl}/api/v1/auth/reset-password/${verificationToken}`;
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      passwordResetToken: hashedToken,
+      passwordResetTokenExpiresAt: expiry,
+    },
+  });
+
+  await sendEmail({
+    to: email,
+    subject: `Reset Your ${appName} Password`,
+    mailgenContent: forgotPasswordTemplate(
+      user.fullName,
+      user.username,
+      emailVerificationUrl,
+    ),
+  });
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        null,
+        "Password reset link has been sent to your email successfully. Please check your email to reset your password.",
+      ),
+    );
+});
+
 export {
+  forgotPassword,
   getCurrentUser,
   login,
   logout,
