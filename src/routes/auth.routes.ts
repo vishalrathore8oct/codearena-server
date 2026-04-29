@@ -12,6 +12,7 @@ import {
   verifyEmail,
 } from "../controllers/auth.controllers.js";
 import { requireAuth } from "../middlewares/authentication.middleware.js";
+import { upload } from "../middlewares/upload.middleware.js";
 import { validate } from "../middlewares/validate.middleware.js";
 import {
   forgotPasswordSchema,
@@ -67,6 +68,7 @@ authRoutes.post(
 authRoutes.patch(
   "/update-profile",
   requireAuth,
+  upload.single("image"),
   validate(updateProfileSchema),
   updateUserProfile,
 );

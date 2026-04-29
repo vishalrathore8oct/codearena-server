@@ -15,6 +15,9 @@ const requiredEnv = [
   "SMTP_PORT",
   "SMTP_USERNAME",
   "SMTP_PASSWORD",
+  "CLOUDINARY_CLOUD_NAME",
+  "CLOUDINARY_API_KEY",
+  "CLOUDINARY_API_SECRET",
 ];
 
 requiredEnv.forEach((key) => {
@@ -37,4 +40,7 @@ export const env = {
   SMTP_PORT: process.env.SMTP_PORT,
   SMTP_USERNAME: process.env.SMTP_USERNAME,
   SMTP_PASSWORD: process.env.SMTP_PASSWORD,
+  CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME as string,
+  CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY as string,
+  CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET as string,
 };

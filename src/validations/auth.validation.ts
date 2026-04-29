@@ -83,7 +83,6 @@ const updateProfileSchema = z.object({
   body: z.object({
     fullName: z.string().min(2).trim().optional(),
     username: z.string().min(3).trim().optional(),
-    image: z.url().trim().optional(),
   }),
 });
 

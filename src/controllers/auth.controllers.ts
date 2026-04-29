@@ -23,6 +23,7 @@ import {
   generateRefreshToken,
 } from "../utils/jwtTokens.utils.js";
 import { generateUniqueUsernameForDB } from "../utils/usernameGenerator.utils.js";
+import { uploadToCloudinary } from "../utils/uploadToCloudinary.utils.js";
 
 const register = asyncHandler(async (req: Request, res: Response) => {
   const { fullName, email, password } = req.body;
@@ -545,7 +546,13 @@ const updateUserProfile = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(401, "Unauthorized User");
   }
 
-  const { fullName, username, image } = req.body;
+  const { fullName, username } = req.body;
+
+  let imageUrl: string | undefined;
+
+  if (req.file) {
+    imageUrl = await uploadToCloudinary(req.file.buffer);
+  }
 
   if (username) {
     const existing = await prisma.user.findUnique({
@@ -565,7 +572,7 @@ const updateUserProfile = asyncHandler(async (req: Request, res: Response) => {
     data: {
       ...(fullName && { fullName }),
       ...(username && { username }),
-      ...(image && { image }),
+      ...(imageUrl && { image: imageUrl }),
     },
     select: {
       id: true,
