@@ -10,7 +10,7 @@ import {
   resetPassword,
   verifyEmail,
 } from "../controllers/auth.controllers.js";
-import { requireAuth } from "../middlewares/auth.middleware.js";
+import { requireAuth } from "../middlewares/authentication.middleware.js";
 import { validate } from "../middlewares/validate.middleware.js";
 import {
   forgotPasswordSchema,

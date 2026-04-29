@@ -6,7 +6,7 @@ import { env } from "../config/env.js";
 import { appName } from "../constant.js";
 import { prisma } from "../db/prisma.js";
 import { sendEmail } from "../services/email.service.js";
-import type { JwtPayload } from "../types/jwt.types.js";
+import type { AuthUser } from "../types/auth.types.js";
 import { ApiError } from "../utils/ApiError.utils.js";
 import { ApiResponse } from "../utils/ApiResponse.utils.js";
 import { asyncHandler } from "../utils/asyncHandler.utils.js";
@@ -165,8 +165,8 @@ const login = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(401, "Invalid email or password");
   }
 
-  const accessToken = generateAccessToken(user.id);
-  const refreshToken = generateRefreshToken(user.id);
+  const accessToken = generateAccessToken(user.id, user.role);
+  const refreshToken = generateRefreshToken(user.id, user.role);
 
   const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
 
@@ -234,12 +234,12 @@ const refreshAccessToken = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(401, "Refresh token is required");
   }
 
-  let decoded: JwtPayload;
+  let decoded: AuthUser;
   try {
     decoded = jwt.verify(
       incomingRefreshToken,
       env.REFRESH_TOKEN_SECRET,
-    ) as JwtPayload;
+    ) as AuthUser;
   } catch {
     throw new ApiError(401, "Invalid or expired refresh token");
   }
@@ -258,8 +258,8 @@ const refreshAccessToken = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(401, "Refresh token mismatch or reused token detected");
   }
 
-  const newAccessToken = generateAccessToken(user.id);
-  const newRefreshToken = generateRefreshToken(user.id);
+  const newAccessToken = generateAccessToken(user.id, user.role);
+  const newRefreshToken = generateRefreshToken(user.id, user.role);
 
   const hashedRefreshToken = await bcrypt.hash(newRefreshToken, 10);
 
@@ -311,10 +311,7 @@ const logout = asyncHandler(async (req: Request, res: Response) => {
 
     if (token) {
       try {
-        const decoded = jwt.verify(
-          token,
-          env.REFRESH_TOKEN_SECRET,
-        ) as JwtPayload;
+        const decoded = jwt.verify(token, env.REFRESH_TOKEN_SECRET) as AuthUser;
         userId = decoded.id;
       } catch {
         // ignore invalid token → just clear cookies

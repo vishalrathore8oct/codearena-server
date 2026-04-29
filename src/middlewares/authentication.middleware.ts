@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { env } from "../config/env.js";
-import type { JwtPayload } from "../types/jwt.types.js";
+import type { AuthUser } from "../types/auth.types.js";
 import { ApiError } from "../utils/ApiError.utils.js";
 import { asyncHandler } from "../utils/asyncHandler.utils.js";
 
@@ -23,13 +23,16 @@ const requireAuth = asyncHandler(
     }
 
     try {
-      const decoded = jwt.verify(token, env.ACCESS_TOKEN_SECRET) as JwtPayload;
+      const decoded = jwt.verify(token, env.ACCESS_TOKEN_SECRET) as AuthUser;
 
-      req.user = { id: decoded.id };
+      req.user = {
+        id: decoded.id,
+        role: decoded.role,
+      };
 
       next();
-    } catch (error) {
-      throw new ApiError(401, "Invalid or expired token", error);
+    } catch {
+      throw new ApiError(401, "Invalid or expired token");
     }
   },
 );
