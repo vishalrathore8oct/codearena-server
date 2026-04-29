@@ -7,9 +7,12 @@ const registerSchema = z.object({
       .min(3, "Full name must be at least 3 characters")
       .trim(),
 
-    email: z.email("Invalid email address").toLowerCase(),
+    email: z.email("Invalid email address").toLowerCase().trim(),
 
-    password: z.string().min(6, "Password must be at least 6 characters"),
+    password: z
+      .string()
+      .min(6, "Password must be at least 6 characters")
+      .trim(),
   }),
 });
 
@@ -24,9 +27,12 @@ const verifyEmailSchema = z.object({
 
 const loginSchema = z.object({
   body: z.object({
-    email: z.email("Invalid email address").toLowerCase(),
+    email: z.email("Invalid email address").toLowerCase().trim(),
 
-    password: z.string().min(6, "Password must be at least 6 characters"),
+    password: z
+      .string()
+      .min(6, "Password must be at least 6 characters")
+      .trim(),
   }),
 });
 
@@ -44,4 +50,16 @@ const refreshTokenSchema = z.object({
     .optional(),
 });
 
-export { loginSchema, refreshTokenSchema, registerSchema, verifyEmailSchema };
+const resendVerificationSchema = z.object({
+  body: z.object({
+    email: z.email("Invalid email address").toLowerCase().trim(),
+  }),
+});
+
+export {
+  loginSchema,
+  refreshTokenSchema,
+  registerSchema,
+  resendVerificationSchema,
+  verifyEmailSchema,
+};

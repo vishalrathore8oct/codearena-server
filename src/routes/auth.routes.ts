@@ -5,6 +5,7 @@ import {
   logout,
   refreshAccessToken,
   register,
+  resendVerificationEmail,
   verifyEmail,
 } from "../controllers/auth.controllers.js";
 import { requireAuth } from "../middlewares/auth.middleware.js";
@@ -37,5 +38,7 @@ authRoutes.post(
 authRoutes.post("/logout", requireAuth, logout);
 
 authRoutes.get("/current-user", requireAuth, getCurrentUser);
+
+authRoutes.post("/resend-verification-email", resendVerificationEmail);
 
 export default authRoutes;

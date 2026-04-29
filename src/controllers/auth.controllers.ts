@@ -147,7 +147,10 @@ const login = asyncHandler(async (req: Request, res: Response) => {
   }
 
   if (!user.isEmailVerified) {
-    throw new ApiError(401, "Please verify your email before logging in");
+    throw new ApiError(
+      401,
+      "Please verify your email to activate your account before logging in",
+    );
   }
 
   const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -372,11 +375,69 @@ const getCurrentUser = asyncHandler(async (req: Request, res: Response) => {
   );
 });
 
+const resendVerificationEmail = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { email } = req.body;
+
+    if (!email) {
+      throw new ApiError(400, "Email is required");
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      throw new ApiError(404, "User not found");
+    }
+
+    if (user.isEmailVerified) {
+      throw new ApiError(400, "Email is already verified");
+    }
+
+    const { verificationToken, hashedToken, expiry } =
+      generateEmailVerificationToken();
+    const baseUrl =
+      process.env.APP_BASE_URL || `${req.protocol}://${req.get("host")}`;
+
+    const emailVerificationUrl = `${baseUrl}/api/v1/auth/verify-email/${verificationToken}`;
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        emailVerificationToken: hashedToken,
+        emailVerificationTokenExpiresAt: expiry,
+      },
+    });
+
+    await sendEmail({
+      to: email,
+      subject: `Verify Your ${appName} Account`,
+      mailgenContent: emailVerificationTemplate(
+        user.fullName,
+        user.username,
+        emailVerificationUrl,
+      ),
+    });
+
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          null,
+          "Verification email Resent on your email successfully. Please verify your email to activate your account.",
+        ),
+      );
+  },
+);
+
 export {
   getCurrentUser,
   login,
   logout,
   refreshAccessToken,
   register,
+  resendVerificationEmail,
   verifyEmail,
 };
