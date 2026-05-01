@@ -33,19 +33,17 @@ const createProblemSchema = z.object({
 
     difficulty: difficultyEnum,
 
-    tags: z.array(z.string().min(1)).min(1, "At least one tag required"),
+    tags: z.array(z.string().min(1)).min(1),
 
-    hints: z.array(z.string().min(1)).min(1, "At least one hint required"),
+    hints: z.array(z.string().min(1)).min(1),
 
-    constraints: z
-      .array(z.string().min(1))
-      .min(1, "At least one constraint required"),
+    constraints: z.array(z.string().min(1)).min(1),
 
     editorial: z.string().optional().nullable(),
 
-    examples: z.array(exampleSchema).min(1, "At least one example required"),
+    examples: z.array(exampleSchema).min(1),
 
-    testcases: z.array(testcaseSchema).min(1, "At least one testcase required"),
+    testcases: z.array(testcaseSchema).min(1),
 
     codeSnippets: codeSnippetsSchema,
 
@@ -53,4 +51,30 @@ const createProblemSchema = z.object({
   }),
 });
 
-export { createProblemSchema };
+const updateProblemSchema = z.object({
+  body: z.object({
+    title: z.string().min(3).trim().optional(),
+
+    description: z.string().min(10).trim().optional(),
+
+    difficulty: difficultyEnum.optional(),
+
+    tags: z.array(z.string().min(1)).min(1).optional(),
+
+    hints: z.array(z.string().min(1)).min(1).optional(),
+
+    constraints: z.array(z.string().min(1)).min(1).optional(),
+
+    editorial: z.string().optional().nullable(),
+
+    examples: z.array(exampleSchema).min(1).optional(),
+
+    testcases: z.array(testcaseSchema).min(1).optional(),
+
+    codeSnippets: codeSnippetsSchema.partial().optional(),
+
+    referenceSolutions: referenceSolutionsSchema.partial().optional(),
+  }),
+});
+
+export { createProblemSchema, updateProblemSchema };

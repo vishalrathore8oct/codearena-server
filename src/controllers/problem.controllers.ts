@@ -136,9 +136,101 @@ const getProblemById = asyncHandler(async (req: Request, res: Response) => {
     .json(new ApiResponse(200, { problem }, "Problem retrieved successfully"));
 });
 
-const updateProblemById = asyncHandler(
-  async (_req: Request, _res: Response) => {},
-);
+const updateProblemById = asyncHandler(async (req: Request, res: Response) => {
+  const id = req.params.id as string;
+
+  const {
+    title,
+    description,
+    difficulty,
+    tags,
+    hints,
+    constraints,
+    editorial,
+    examples,
+    testcases,
+    codeSnippets,
+    referenceSolutions,
+  } = req.body;
+
+  if (req.user.role !== "ADMIN") {
+    throw new ApiError(
+      403,
+      "Forbidden - User does not have the required role to update a problem",
+    );
+  }
+
+  for (const [language, solutionCode] of Object.entries(referenceSolutions)) {
+    if (!solutionCode) {
+      throw new ApiError(400, `Reference solution for ${language} is required`);
+    }
+
+    const languageId = getJudge0LanguageId(language);
+
+    if (!languageId) {
+      throw new ApiError(400, `Unsupported language: ${language}`);
+    }
+
+    if (!testcases || testcases.length === 0) {
+      throw new ApiError(400, "At least one testcase is required");
+    }
+
+    const submissions = testcases.map((testcase: Testcase) => ({
+      language_id: languageId,
+      source_code: solutionCode,
+      stdin: testcase.input,
+      expected_output: testcase.output,
+    }));
+
+    const submissionBatchResult =
+      await createJudge0SubmissionBatch(submissions);
+
+    const submissionBatchTokens = submissionBatchResult.map(
+      (result: Judge0Response) => result.token,
+    );
+
+    const pollingSubmissionResult = await pollingJudge0SubmissionBatchResult(
+      submissionBatchTokens,
+    );
+
+    for (let i = 0; i < pollingSubmissionResult.length; i++) {
+      const result = pollingSubmissionResult[i];
+      if (result.status.id !== 3) {
+        throw new ApiError(
+          400,
+          `Testcase ${i + 1} failed for Language ${language}.`,
+        );
+      }
+    }
+  }
+
+  const updatedProblem = await prisma.problem.update({
+    where: { id },
+    data: {
+      title,
+      description,
+      difficulty,
+      tags,
+      hints,
+      constraints,
+      editorial,
+      examples,
+      testcases,
+      codeSnippets,
+      referenceSolutions,
+    },
+  });
+
+  res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { problem: updatedProblem },
+        "Problem updated successfully",
+      ),
+    );
+});
 
 const deleteProblemById = asyncHandler(async (req: Request, res: Response) => {
   const id = req.params.id as string;
