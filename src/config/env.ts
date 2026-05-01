@@ -18,6 +18,7 @@ const requiredEnv = [
   "CLOUDINARY_CLOUD_NAME",
   "CLOUDINARY_API_KEY",
   "CLOUDINARY_API_SECRET",
+  "JUDGE0_API_URL",
 ];
 
 requiredEnv.forEach((key) => {
@@ -43,4 +44,5 @@ export const env = {
   CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME as string,
   CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY as string,
   CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET as string,
+  JUDGE0_API_URL: process.env.JUDGE0_API_URL as string,
 };
