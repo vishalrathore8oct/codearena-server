@@ -10,10 +10,7 @@ import {
 import { requireAuth } from "../middlewares/authentication.middleware.js";
 import { authorize } from "../middlewares/authorization.middleware.js";
 import { validate } from "../middlewares/validate.middleware.js";
-import {
-  createProblemSchema,
-  getProblemByIdSchema,
-} from "../validations/problem.validation.js";
+import { createProblemSchema } from "../validations/problem.validation.js";
 
 const problemRoutes = Router();
 
@@ -27,12 +24,7 @@ problemRoutes.post(
 
 problemRoutes.get("/get-all-problems", requireAuth, getAllProblems);
 
-problemRoutes.get(
-  "/get-problem/:id",
-  requireAuth,
-  validate(getProblemByIdSchema),
-  getProblemById,
-);
+problemRoutes.get("/get-problem/:id", requireAuth, getProblemById);
 
 problemRoutes.post(
   "/update-problem/:id",

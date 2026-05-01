@@ -16,16 +16,6 @@ const registerSchema = z.object({
   }),
 });
 
-const verifyEmailSchema = z.object({
-  params: z.object({
-    verificationToken: z
-      .string()
-      .min(10, "Invalid verificationToken")
-      .regex(/^[a-f0-9]+$/, "Token must be hex string")
-      .trim(),
-  }),
-});
-
 const loginSchema = z.object({
   body: z.object({
     email: z.email("Invalid email address").toLowerCase().trim(),
@@ -64,13 +54,6 @@ const forgotPasswordSchema = z.object({
 });
 
 const resetPasswordSchema = z.object({
-  params: z.object({
-    verificationToken: z
-      .string()
-      .min(10, "Invalid verificationToken")
-      .regex(/^[a-f0-9]+$/, "Token must be hex string")
-      .trim(),
-  }),
   body: z.object({
     password: z
       .string()
@@ -105,5 +88,4 @@ export {
   resendVerificationSchema,
   resetPasswordSchema,
   updateProfileSchema,
-  verifyEmailSchema,
 };

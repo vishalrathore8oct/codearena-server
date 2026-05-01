@@ -26,18 +26,13 @@ import {
   resendVerificationSchema,
   resetPasswordSchema,
   updateProfileSchema,
-  verifyEmailSchema,
 } from "../validations/auth.validation.js";
 
 const authRoutes = Router();
 
 authRoutes.post("/register", validate(registerSchema), register);
 
-authRoutes.get(
-  "/verify-email/:verificationToken",
-  validate(verifyEmailSchema),
-  verifyEmail,
-);
+authRoutes.get("/verify-email/:verificationToken", verifyEmail);
 
 authRoutes.post("/login", validate(loginSchema), login);
 
