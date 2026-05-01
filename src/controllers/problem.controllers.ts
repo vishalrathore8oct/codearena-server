@@ -140,9 +140,32 @@ const updateProblemById = asyncHandler(
   async (_req: Request, _res: Response) => {},
 );
 
-const deleteProblemById = asyncHandler(
-  async (_req: Request, _res: Response) => {},
-);
+const deleteProblemById = asyncHandler(async (req: Request, res: Response) => {
+  const id = req.params.id as string;
+
+  if (req.user.role !== "ADMIN") {
+    throw new ApiError(
+      403,
+      "Forbidden - User does not have the required role to delete a problem",
+    );
+  }
+
+  const problem = await prisma.problem.findUnique({
+    where: { id },
+  });
+
+  if (!problem) {
+    throw new ApiError(404, "Problem not found");
+  }
+
+  await prisma.problem.delete({
+    where: { id },
+  });
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, null, "Problem deleted successfully"));
+});
 
 const getAllSolvedProblems = asyncHandler(
   async (_req: Request, _res: Response) => {},

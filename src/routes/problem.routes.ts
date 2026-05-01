@@ -33,7 +33,7 @@ problemRoutes.post(
   updateProblemById,
 );
 
-problemRoutes.post(
+problemRoutes.delete(
   "/delete-problem/:id",
   requireAuth,
   authorize("ADMIN"),
