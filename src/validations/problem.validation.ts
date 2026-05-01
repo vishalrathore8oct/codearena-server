@@ -53,4 +53,10 @@ const createProblemSchema = z.object({
   }),
 });
 
-export { createProblemSchema };
+const getProblemByIdSchema = z.object({
+  params: z.object({
+    id: z.string().min(1, "Problem ID is required").trim(),
+  }),
+});
+
+export { createProblemSchema, getProblemByIdSchema };

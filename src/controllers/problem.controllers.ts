@@ -120,9 +120,21 @@ const getAllProblems = asyncHandler(async (req: Request, res: Response) => {
     );
 });
 
-const getProblemById = asyncHandler(
-  async (_req: Request, _res: Response) => {},
-);
+const getProblemById = asyncHandler(async (req: Request, res: Response) => {
+  const id = req.params.id as string;
+
+  const problem = await prisma.problem.findUnique({
+    where: { id },
+  });
+
+  if (!problem) {
+    throw new ApiError(404, "Problem not found");
+  }
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, { problem }, "Problem retrieved successfully"));
+});
 
 const updateProblemById = asyncHandler(
   async (_req: Request, _res: Response) => {},
