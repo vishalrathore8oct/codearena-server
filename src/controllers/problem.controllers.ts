@@ -104,9 +104,21 @@ const createProblem = asyncHandler(async (req: Request, res: Response) => {
     );
 });
 
-const getAllProblems = asyncHandler(
-  async (_req: Request, _res: Response) => {},
-);
+const getAllProblems = asyncHandler(async (req: Request, res: Response) => {
+  const problems = await prisma.problem.findMany();
+
+  if (!problems || problems.length === 0) {
+    return res
+      .status(200)
+      .json(new ApiResponse(200, { problems: [] }, "No problems found"));
+  }
+
+  res
+    .status(200)
+    .json(
+      new ApiResponse(200, { problems }, "Problems retrieved successfully"),
+    );
+});
 
 const getProblemById = asyncHandler(
   async (_req: Request, _res: Response) => {},

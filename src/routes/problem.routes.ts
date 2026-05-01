@@ -22,7 +22,7 @@ problemRoutes.post(
   createProblem,
 );
 
-problemRoutes.post("/get-all-problems", requireAuth, getAllProblems);
+problemRoutes.get("/get-all-problems", requireAuth, getAllProblems);
 
 problemRoutes.post("/get-problem/:id", requireAuth, getProblemById);
 
