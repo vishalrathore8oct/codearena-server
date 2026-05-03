@@ -1,8 +1,10 @@
 import type { Request, Response } from "express";
+import { prisma } from "../db/prisma.js";
 import type { Judge0Response } from "../types/judge0.types.js";
 import { asyncHandler } from "../utils/asyncHandler.utils.js";
 import {
   createJudge0SubmissionBatch,
+  getJudge0LanguageName,
   pollingJudge0SubmissionBatchResult,
 } from "../utils/Judge0.utils.js";
 
@@ -39,13 +41,106 @@ const codeExecution = asyncHandler(async (req: Request, res: Response) => {
   const pollingSubmissionResult =
     await pollingJudge0SubmissionBatchResult(submissionTokens);
 
-  console.log("problemId", problemId);
-  console.log("pollingSubmissionResult", pollingSubmissionResult);
+  let isAllPassed = true;
+
+  const testCaseResults = pollingSubmissionResult.map(
+    (result: Judge0Response, index: number) => {
+      const isPassed = result.stdout?.trim() === expectedOutput[index].trim();
+      if (!isPassed) {
+        isAllPassed = false;
+      }
+      return {
+        testCase: index + 1,
+        passed: isPassed,
+        expectedOutput: expectedOutput[index],
+        stdin: stdin[index],
+        stdout: result.stdout,
+        stderr: result.stderr,
+        compileOutput: result.compile_output,
+        status: result.status.description,
+        memory: result.memory ? `${result.memory} KB` : undefined,
+        time: result.time ? `${result.time} sec` : undefined,
+      };
+    },
+  );
+
+  const submission = await prisma.submission.create({
+    data: {
+      language: getJudge0LanguageName(languageId),
+      sourceCode,
+      stdin: stdin.join("\n"),
+      stdout: JSON.stringify(
+        testCaseResults.map((result: Judge0Response) => result.stdout),
+      ),
+      stderr: testCaseResults.some((result: Judge0Response) => result.stderr)
+        ? JSON.stringify(
+            testCaseResults.map((result: Judge0Response) => result.stderr),
+          )
+        : null,
+      compileOutput: testCaseResults.some(
+        (result: Judge0Response) => result.compileOutput,
+      )
+        ? JSON.stringify(
+            testCaseResults.map(
+              (result: Judge0Response) => result.compileOutput,
+            ),
+          )
+        : null,
+      status: isAllPassed ? "Accepted" : "Wrong Answer",
+      memory: testCaseResults.some((result: Judge0Response) => result.memory)
+        ? JSON.stringify(
+            testCaseResults.map((result: Judge0Response) => result.memory),
+          )
+        : null,
+      time: testCaseResults.some((result: Judge0Response) => result.time)
+        ? JSON.stringify(
+            testCaseResults.map((result: Judge0Response) => result.time),
+          )
+        : null,
+      userId: req.user.id,
+      problemId,
+    },
+  });
+
+  if (isAllPassed) {
+    await prisma.solvedProblem.upsert({
+      where: {
+        userId_problemId: {
+          userId: req.user.id,
+          problemId,
+        },
+      },
+      update: {},
+      create: {
+        userId: req.user.id,
+        problemId,
+      },
+    });
+  }
+
+  const testCaseResultswithSubmissionId = testCaseResults.map(
+    (result: Judge0Response) => ({
+      ...result,
+      submissionId: submission.id,
+    }),
+  );
+
+  await prisma.testCaseResult.createMany({
+    data: testCaseResultswithSubmissionId,
+  });
+
+  const submissionWithTestCaseResults = await prisma.submission.findUnique({
+    where: { id: submission.id },
+    include: {
+      testCaseResults: true,
+    },
+  });
 
   res.status(200).json({
     status: "success",
     statusCode: 200,
     message: "Code executed successfully",
+    submission: submissionWithTestCaseResults,
   });
 });
 

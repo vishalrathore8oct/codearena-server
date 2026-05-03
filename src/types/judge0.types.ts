@@ -6,7 +6,17 @@ export interface Judge0Submission {
 }
 
 export interface Judge0Response {
+  status: {
+    id: number;
+    description: string;
+  };
+  compile_output: string | null;
+  stderr: string | null;
+  memory: string | null;
+  time: string | null;
+  stdout: string | null;
   token: string;
+  compileOutput?: string;
 }
 
 export interface Judge0Result {
