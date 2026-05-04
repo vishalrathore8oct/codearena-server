@@ -6,7 +6,7 @@ import { asyncHandler } from "../utils/asyncHandler.utils.js";
 const getAllSubmissions = asyncHandler(async (req: Request, res: Response) => {
   const userId = req.user?.id;
 
-  const submissions = prisma.submission.findMany({
+  const submissions = await prisma.submission.findMany({
     where: {
       userId: userId,
     },
