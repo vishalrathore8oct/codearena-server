@@ -11,6 +11,7 @@ import {
 } from "./middlewares/swagger.middleware.js";
 import authRoutes from "./routes/auth.routes.js";
 import codeExecutionRoutes from "./routes/codeExecution.routes.js";
+import playlistRoutes from "./routes/playlist.routes.js";
 import problemRoutes from "./routes/problem.routes.js";
 import submissionRoutes from "./routes/submission.routes.js";
 
@@ -42,6 +43,7 @@ app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/problems", problemRoutes);
 app.use("/api/v1/code-execution", codeExecutionRoutes);
 app.use("/api/v1/submission", submissionRoutes);
+app.use("/api/v1/playlist", playlistRoutes);
 
 app.use(errorHandler);
 
