@@ -260,7 +260,30 @@ const deleteProblemById = asyncHandler(async (req: Request, res: Response) => {
 });
 
 const getAllSolvedProblems = asyncHandler(
-  async (_req: Request, _res: Response) => {},
+  async (req: Request, res: Response) => {
+    const solvedProblems = await prisma.problem.findMany({
+      where: {
+        solvedProblems: {
+          some: { userId: req.user.id },
+        },
+      },
+      include: {
+        solvedProblems: {
+          where: { userId: req.user.id },
+        },
+      },
+    });
+
+    res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          { solvedProblems },
+          "Solved problems retrieved successfully",
+        ),
+      );
+  },
 );
 
 export {
