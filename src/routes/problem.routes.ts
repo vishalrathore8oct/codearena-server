@@ -12,6 +12,8 @@ import { authorize } from "../middlewares/authorization.middleware.js";
 import { validate } from "../middlewares/validate.middleware.js";
 import {
   createProblemSchema,
+  deleteProblemByIdSchema,
+  getProblemByIdSchema,
   updateProblemSchema,
 } from "../validations/problem.validation.js";
 
@@ -27,7 +29,12 @@ problemRoutes.post(
 
 problemRoutes.get("/get-all-problems", requireAuth, getAllProblems);
 
-problemRoutes.get("/get-problem/:id", requireAuth, getProblemById);
+problemRoutes.get(
+  "/get-problem/:id",
+  requireAuth,
+  validate(getProblemByIdSchema),
+  getProblemById,
+);
 
 problemRoutes.put(
   "/update-problem/:id",
@@ -41,6 +48,7 @@ problemRoutes.delete(
   "/delete-problem/:id",
   requireAuth,
   authorize("ADMIN"),
+  validate(deleteProblemByIdSchema),
   deleteProblemById,
 );
 
