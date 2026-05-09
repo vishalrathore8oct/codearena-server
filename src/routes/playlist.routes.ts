@@ -11,11 +11,15 @@ import { requireAuth } from "../middlewares/authentication.middleware.js";
 
 const playlistRoutes = Router();
 
-playlistRoutes.get("/", requireAuth, getAllPlaylistDetails);
+playlistRoutes.post("/create-playlist", requireAuth, createPlaylist);
 
-playlistRoutes.get("/:playlistId", requireAuth, getPlaylistDetails);
+playlistRoutes.get("/get-all-playlists", requireAuth, getAllPlaylistDetails);
 
-playlistRoutes.post("/create", requireAuth, createPlaylist);
+playlistRoutes.get(
+  "/get-playlist/:playlistId",
+  requireAuth,
+  getPlaylistDetails,
+);
 
 playlistRoutes.post(
   "/:playlistId/add-problem",
@@ -23,10 +27,14 @@ playlistRoutes.post(
   addProblemToPlaylist,
 );
 
-playlistRoutes.delete("/:playlistId", requireAuth, deletePlaylist);
+playlistRoutes.delete(
+  "/delete-playlist/:playlistId",
+  requireAuth,
+  deletePlaylist,
+);
 
 playlistRoutes.delete(
-  "/:playlistId/remove-problem",
+  "/:playlistId/remove-problem/:problemId",
   requireAuth,
   removeProblemFromPlaylist,
 );
