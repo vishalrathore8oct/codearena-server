@@ -20,25 +20,31 @@ import { validate } from "../middlewares/validate.middleware.js";
 import {
   changePasswordSchema,
   forgotPasswordSchema,
+  getAllUsersSchema,
   loginSchema,
-  refreshTokenSchema,
+  refreshAccessTokenSchema,
   registerSchema,
   resendVerificationSchema,
   resetPasswordSchema,
   updateProfileSchema,
+  verifyEmailSchema,
 } from "../validations/auth.validation.js";
 
 const authRoutes = Router();
 
 authRoutes.post("/register", validate(registerSchema), register);
 
-authRoutes.get("/verify-email/:verificationToken", verifyEmail);
+authRoutes.get(
+  "/verify-email/:verificationToken",
+  validate(verifyEmailSchema),
+  verifyEmail,
+);
 
 authRoutes.post("/login", validate(loginSchema), login);
 
 authRoutes.post(
   "/refresh-token",
-  validate(refreshTokenSchema),
+  validate(refreshAccessTokenSchema),
   refreshAccessToken,
 );
 
@@ -83,6 +89,7 @@ authRoutes.get(
   "/admin/get-all-users",
   requireAuth,
   authorize("ADMIN"),
+  validate(getAllUsersSchema),
   getAllUsers,
 );
 

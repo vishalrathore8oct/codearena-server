@@ -214,17 +214,21 @@ const login = asyncHandler(async (req: Request, res: Response) => {
 });
 
 const refreshAccessToken = asyncHandler(async (req: Request, res: Response) => {
+  const tokenFromCookie = req.cookies?.refreshToken;
+  const tokenFromBody = req.body?.refreshToken;
+  const tokenFromHeader =
+    req.headers.authorization && req.headers.authorization.startsWith("Bearer ")
+      ? req.headers.authorization.split(" ")[1]
+      : undefined;
+
   let incomingRefreshToken: string | undefined;
 
-  if (req.cookies?.refreshToken) {
-    incomingRefreshToken = req.cookies.refreshToken;
-  } else if (req.body?.refreshToken) {
-    incomingRefreshToken = req.body.refreshToken;
-  } else if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith("Bearer ")
-  ) {
-    incomingRefreshToken = req.headers.authorization.split(" ")[1];
+  if (tokenFromCookie) {
+    incomingRefreshToken = tokenFromCookie;
+  } else if (tokenFromBody) {
+    incomingRefreshToken = tokenFromBody;
+  } else if (tokenFromHeader) {
+    incomingRefreshToken = tokenFromHeader;
   }
 
   if (!incomingRefreshToken) {
@@ -232,6 +236,7 @@ const refreshAccessToken = asyncHandler(async (req: Request, res: Response) => {
   }
 
   let decoded: AuthUser;
+
   try {
     decoded = jwt.verify(
       incomingRefreshToken,
@@ -289,17 +294,17 @@ const refreshAccessToken = asyncHandler(async (req: Request, res: Response) => {
 
 const logout = asyncHandler(async (req: Request, res: Response) => {
   let userId: string | undefined;
+  const tokenFromCookie = req.cookies?.refreshToken;
+  const tokenFromBody = req.body?.refreshToken;
+  const tokenFromHeader =
+    req.headers.authorization && req.headers.authorization.startsWith("Bearer ")
+      ? req.headers.authorization.split(" ")[1]
+      : undefined;
 
   if (req.user?.id) {
     userId = req.user.id;
   } else {
-    const token =
-      req.cookies?.refreshToken ||
-      req.body?.refreshToken ||
-      (req.headers.authorization?.startsWith("Bearer ")
-        ? req.headers.authorization.split(" ")[1]
-        : undefined);
-
+    const token = tokenFromCookie || tokenFromBody || tokenFromHeader;
     if (token) {
       try {
         const decoded = jwt.verify(token, env.REFRESH_TOKEN_SECRET) as AuthUser;
@@ -526,6 +531,10 @@ const resetPassword = asyncHandler(async (req: Request, res: Response) => {
 const updateUserProfile = asyncHandler(async (req: Request, res: Response) => {
   const userId = req.user?.id;
 
+  const { fullName, username } = req.body;
+
+  let imageUrl: string | undefined;
+
   if (!userId) {
     throw new ApiError(401, "Unauthorized User");
   }
@@ -537,10 +546,6 @@ const updateUserProfile = asyncHandler(async (req: Request, res: Response) => {
   if (!user) {
     throw new ApiError(404, "User not found");
   }
-
-  const { fullName, username } = req.body;
-
-  let imageUrl: string | undefined;
 
   if (req.file) {
     if (user?.image) {
@@ -596,11 +601,11 @@ const updateUserProfile = asyncHandler(async (req: Request, res: Response) => {
 const changePassword = asyncHandler(async (req: Request, res: Response) => {
   const userId = req.user?.id;
 
+  const { currentPassword, newPassword } = req.body;
+
   if (!userId) {
     throw new ApiError(401, "Unauthorized");
   }
-
-  const { currentPassword, newPassword } = req.body;
 
   if (!currentPassword || !newPassword) {
     throw new ApiError(400, "Current and new password are required");
