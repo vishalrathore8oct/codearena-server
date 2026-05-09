@@ -10,7 +10,7 @@ import {
   swaggerUi,
 } from "./middlewares/swagger.middleware.js";
 import authRoutes from "./routes/auth.routes.js";
-import codeExecutionRoutes from "./routes/codeExecution.routes.js";
+import codeExecutionRoutes from "./routes/execution.routes.js";
 import playlistRoutes from "./routes/playlist.routes.js";
 import problemRoutes from "./routes/problem.routes.js";
 import submissionRoutes from "./routes/submission.routes.js";
