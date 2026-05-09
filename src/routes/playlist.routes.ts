@@ -34,7 +34,7 @@ playlistRoutes.delete(
 );
 
 playlistRoutes.delete(
-  "/:playlistId/remove-problem/:problemId",
+  "/:playlistId/remove-problem",
   requireAuth,
   removeProblemFromPlaylist,
 );
