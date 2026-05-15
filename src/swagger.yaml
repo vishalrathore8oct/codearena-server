@@ -2,22 +2,2253 @@ openapi: 3.0.0
 info:
   title: CodeArena API
   version: 1.0.0
-  description: API documentation for CodeArena Backend
+  description: API documentation for CodeArena Backend - A competitive programming platform
 
 servers:
   - url: http://localhost:4000
+    description: Development server
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: accessToken
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the user
+        fullName:
+          type: string
+          description: Full name of the user
+        username:
+          type: string
+          description: Unique username of the user
+        email:
+          type: string
+          format: email
+          description: Email address of the user
+        password:
+          type: string
+          description: Hashed password (not returned in responses)
+        image:
+          type: string
+          format: uri
+          nullable: true
+          description: Profile image URL
+        role:
+          type: string
+          enum: [ADMIN, USER]
+          default: USER
+          description: Role of the user
+        isEmailVerified:
+          type: boolean
+          default: false
+          description: Whether the user's email is verified
+        emailVerificationToken:
+          type: string
+          nullable: true
+          description: Token for email verification
+        emailVerificationTokenExpiresAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: Expiry time for email verification token
+        passwordResetToken:
+          type: string
+          nullable: true
+          description: Token for password reset
+        passwordResetTokenExpiresAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: Expiry time for password reset token
+        refreshToken:
+          type: string
+          nullable: true
+          description: Refresh token for authentication
+        createdAt:
+          type: string
+          format: date-time
+          description: Account creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last update timestamp
+
+    RegisterRequest:
+      type: object
+      required:
+        - fullName
+        - email
+        - password
+      properties:
+        fullName:
+          type: string
+          minLength: 3
+          description: Full name of the user
+        email:
+          type: string
+          format: email
+          description: Email address for registration
+        password:
+          type: string
+          minLength: 6
+          description: Password for the account
+
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          description: Email address
+        password:
+          type: string
+          minLength: 6
+          description: Password
+
+    LoginResponse:
+      type: object
+      properties:
+        user:
+          $ref: "#/components/schemas/User"
+        accessToken:
+          type: string
+          description: JWT access token
+        refreshToken:
+          type: string
+          description: JWT refresh token
+
+    RefreshTokenRequest:
+      type: object
+      properties:
+        refreshToken:
+          type: string
+          description: Refresh token (optional if provided in cookie or header)
+
+    RefreshTokenResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          description: New JWT access token
+        refreshToken:
+          type: string
+          description: New JWT refresh token
+
+    ResendVerificationRequest:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          format: email
+          description: Email address to resend verification
+
+    ForgotPasswordRequest:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          format: email
+          description: Email address for password reset
+
+    ResetPasswordRequest:
+      type: object
+      required:
+        - password
+      properties:
+        password:
+          type: string
+          minLength: 6
+          description: New password
+
+    UpdateProfileRequest:
+      type: object
+      properties:
+        fullName:
+          type: string
+          minLength: 2
+          description: Updated full name
+        username:
+          type: string
+          minLength: 3
+          description: Updated username
+
+    ChangePasswordRequest:
+      type: object
+      required:
+        - currentPassword
+        - newPassword
+      properties:
+        currentPassword:
+          type: string
+          minLength: 6
+          description: Current password
+        newPassword:
+          type: string
+          minLength: 6
+          description: New password
+
+    UsersListResponse:
+      type: object
+      properties:
+        users:
+          type: array
+          items:
+            $ref: "#/components/schemas/User"
+        pagination:
+          type: object
+          properties:
+            totalUsers:
+              type: integer
+              description: Total number of users
+            totalPages:
+              type: integer
+              description: Total number of pages
+            currentPage:
+              type: integer
+              description: Current page number
+            limit:
+              type: integer
+              description: Number of users per page
+
+    ApiResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          description: HTTP status code
+        data:
+          description: Response data
+        message:
+          type: string
+          description: Response message
+        success:
+          type: boolean
+          description: Success status
+
+    ErrorResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          description: HTTP status code
+        message:
+          type: string
+          description: Error message
+        success:
+          type: boolean
+          default: false
+
+    Problem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the problem
+        title:
+          type: string
+          description: Title of the problem
+        description:
+          type: string
+          description: Detailed description of the problem
+        difficulty:
+          type: string
+          enum: [EASY, MEDIUM, HARD]
+          description: Difficulty level of the problem
+        tags:
+          type: array
+          items:
+            type: string
+          description: Tags associated with the problem
+        hints:
+          type: array
+          items:
+            type: string
+          description: Hints for solving the problem
+        constraints:
+          type: array
+          items:
+            type: string
+          description: Constraints for the problem
+        editorial:
+          type: string
+          nullable: true
+          description: Editorial/solution explanation
+        examples:
+          description: Example inputs and outputs
+        testcases:
+          description: Test cases for the problem
+        codeSnippets:
+          description: Code snippets in different languages
+        referenceSolutions:
+          description: Reference solutions
+        userId:
+          type: string
+          format: uuid
+          description: ID of the user who created the problem
+        createdAt:
+          type: string
+          format: date-time
+          description: Problem creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last update timestamp
+
+    Submission:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the submission
+        language:
+          type: string
+          description: Programming language used
+        sourceCode:
+          description: Source code submitted
+        stdin:
+          type: string
+          nullable: true
+          description: Standard input
+        stdout:
+          type: string
+          nullable: true
+          description: Standard output
+        stderr:
+          type: string
+          nullable: true
+          description: Standard error
+        compileOutput:
+          type: string
+          nullable: true
+          description: Compilation output
+        status:
+          type: string
+          description: Submission status
+        memory:
+          type: string
+          nullable: true
+          description: Memory usage
+        time:
+          type: string
+          nullable: true
+          description: Execution time
+        userId:
+          type: string
+          format: uuid
+          description: ID of the user who made the submission
+        problemId:
+          type: string
+          format: uuid
+          description: ID of the problem being solved
+        createdAt:
+          type: string
+          format: date-time
+          description: Submission creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last update timestamp
+
+    TestCaseResult:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the test case result
+        testCase:
+          type: integer
+          description: Test case number
+        passed:
+          type: boolean
+          description: Whether the test case passed
+        expectedOutput:
+          type: string
+          nullable: true
+          description: Expected output for the test case
+        stdin:
+          type: string
+          nullable: true
+          description: Input for the test case
+        stdout:
+          type: string
+          nullable: true
+          description: Actual output
+        stderr:
+          type: string
+          nullable: true
+          description: Error output
+        compileOutput:
+          type: string
+          nullable: true
+          description: Compilation output
+        status:
+          type: string
+          description: Test case status
+        memory:
+          type: string
+          nullable: true
+          description: Memory usage for this test case
+        time:
+          type: string
+          nullable: true
+          description: Execution time for this test case
+        submissionId:
+          type: string
+          format: uuid
+          description: ID of the submission this result belongs to
+        createdAt:
+          type: string
+          format: date-time
+          description: Test case result creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last update timestamp
+
+    SolvedProblem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the solved problem record
+        userId:
+          type: string
+          format: uuid
+          description: ID of the user who solved the problem
+        problemId:
+          type: string
+          format: uuid
+          description: ID of the solved problem
+        createdAt:
+          type: string
+          format: date-time
+          description: Record creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last update timestamp
+
+    Playlist:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the playlist
+        title:
+          type: string
+          description: Title of the playlist
+        description:
+          type: string
+          nullable: true
+          description: Description of the playlist
+        userId:
+          type: string
+          format: uuid
+          description: ID of the user who created the playlist
+        createdAt:
+          type: string
+          format: date-time
+          description: Playlist creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last update timestamp
+
+    ProblemInPlaylist:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the playlist-problem relationship
+        playlistId:
+          type: string
+          format: uuid
+          description: ID of the playlist
+        problemId:
+          type: string
+          format: uuid
+          description: ID of the problem
+        createdAt:
+          type: string
+          format: date-time
+          description: Relationship creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last update timestamp
+
+    CreateProblemRequest:
+      type: object
+      required:
+        - title
+        - description
+        - difficulty
+        - tags
+        - hints
+        - constraints
+        - examples
+        - testcases
+        - codeSnippets
+        - referenceSolutions
+      properties:
+        title:
+          type: string
+          minLength: 3
+          maxLength: 200
+          description: Title of the problem
+        description:
+          type: string
+          minLength: 10
+          description: Detailed description of the problem
+        difficulty:
+          type: string
+          enum: [EASY, MEDIUM, HARD]
+          description: Difficulty level of the problem
+        tags:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: Tags associated with the problem
+        hints:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: Hints for solving the problem
+        constraints:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: Constraints for the problem
+        editorial:
+          type: string
+          nullable: true
+          description: Editorial/solution explanation
+        examples:
+          type: array
+          items:
+            type: object
+            required:
+              - input
+              - output
+              - explanation
+            properties:
+              input:
+                type: string
+                description: Example input
+              output:
+                type: string
+                description: Example output
+              explanation:
+                type: string
+                description: Explanation of the example
+          minItems: 1
+          description: Example inputs and outputs
+        testcases:
+          type: array
+          items:
+            type: object
+            required:
+              - input
+              - output
+            properties:
+              input:
+                type: string
+                description: Test case input
+              output:
+                type: string
+                description: Expected test case output
+          minItems: 1
+          description: Test cases for validation
+        codeSnippets:
+          type: object
+          required:
+            - JAVASCRIPT
+            - PYTHON
+            - JAVA
+          properties:
+            JAVASCRIPT:
+              type: string
+              description: JavaScript code snippet
+            PYTHON:
+              type: string
+              description: Python code snippet
+            JAVA:
+              type: string
+              description: Java code snippet
+          description: Code snippets in different languages
+        referenceSolutions:
+          type: object
+          required:
+            - JAVASCRIPT
+            - PYTHON
+            - JAVA
+          properties:
+            JAVASCRIPT:
+              type: string
+              description: JavaScript reference solution
+            PYTHON:
+              type: string
+              description: Python reference solution
+            JAVA:
+              type: string
+              description: Java reference solution
+          description: Reference solutions in different languages
+
+    UpdateProblemRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 3
+          maxLength: 200
+          description: Title of the problem
+        description:
+          type: string
+          minLength: 10
+          description: Detailed description of the problem
+        difficulty:
+          type: string
+          enum: [EASY, MEDIUM, HARD]
+          description: Difficulty level of the problem
+        tags:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: Tags associated with the problem
+        hints:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: Hints for solving the problem
+        constraints:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: Constraints for the problem
+        editorial:
+          type: string
+          nullable: true
+          description: Editorial/solution explanation
+        examples:
+          type: array
+          items:
+            type: object
+            required:
+              - input
+              - output
+              - explanation
+            properties:
+              input:
+                type: string
+                description: Example input
+              output:
+                type: string
+                description: Example output
+              explanation:
+                type: string
+                description: Explanation of the example
+          minItems: 1
+          description: Example inputs and outputs
+        testcases:
+          type: array
+          items:
+            type: object
+            required:
+              - input
+              - output
+            properties:
+              input:
+                type: string
+                description: Test case input
+              output:
+                type: string
+                description: Expected test case output
+          minItems: 1
+          description: Test cases for validation
+        codeSnippets:
+          type: object
+          properties:
+            JAVASCRIPT:
+              type: string
+              description: JavaScript code snippet
+            PYTHON:
+              type: string
+              description: Python code snippet
+            JAVA:
+              type: string
+              description: Java code snippet
+          description: Code snippets in different languages
+        referenceSolutions:
+          type: object
+          properties:
+            JAVASCRIPT:
+              type: string
+              description: JavaScript reference solution
+            PYTHON:
+              type: string
+              description: Python reference solution
+            JAVA:
+              type: string
+              description: Java reference solution
+          description: Reference solutions in different languages
+
+    ProblemsListResponse:
+      type: object
+      properties:
+        problems:
+          type: array
+          items:
+            $ref: "#/components/schemas/Problem"
+          description: List of problems
+
+    SolvedProblemsResponse:
+      type: object
+      properties:
+        solvedProblems:
+          type: array
+          items:
+            allOf:
+              - $ref: "#/components/schemas/Problem"
+              - type: object
+                properties:
+                  solvedProblems:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/SolvedProblem"
+                    description: Solved problem records for the current user
+          description: List of solved problems with solve records
+
+    SubmissionsListResponse:
+      type: object
+      properties:
+        submissions:
+          type: array
+          items:
+            $ref: "#/components/schemas/Submission"
+          description: List of submissions
+
+    SubmissionCountResponse:
+      type: object
+      properties:
+        submissionsCount:
+          type: integer
+          description: Number of submissions for the specified problem
+
+    CreatePlaylistRequest:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Playlist title
+        description:
+          type: string
+          maxLength: 500
+          nullable: true
+          description: Playlist description
+
+    ProblemIdsRequest:
+      type: object
+      required:
+        - problemIds
+      properties:
+        problemIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+          minItems: 1
+          maxItems: 100
+          description: List of problem IDs to add or remove from a playlist
+
+    ProblemInPlaylistWithProblem:
+      allOf:
+        - $ref: "#/components/schemas/ProblemInPlaylist"
+        - type: object
+          properties:
+            problem:
+              $ref: "#/components/schemas/Problem"
+
+    PlaylistWithProblems:
+      allOf:
+        - $ref: "#/components/schemas/Playlist"
+        - type: object
+          properties:
+            problems:
+              type: array
+              items:
+                $ref: "#/components/schemas/ProblemInPlaylistWithProblem"
+              description: Problems included in the playlist
+
+    PlaylistsResponse:
+      type: object
+      properties:
+        playlists:
+          type: array
+          items:
+            $ref: "#/components/schemas/PlaylistWithProblems"
+          description: List of playlists with problem details
+
+    PlaylistDetailsResponse:
+      type: object
+      properties:
+        playlist:
+          $ref: "#/components/schemas/PlaylistWithProblems"
+
+    CodeExecutionRequest:
+      type: object
+      required:
+        - sourceCode
+        - languageId
+        - stdin
+        - expectedOutput
+        - problemId
+      properties:
+        sourceCode:
+          type: string
+          minLength: 1
+          maxLength: 50000
+          description: Source code to execute
+        languageId:
+          type: integer
+          minimum: 1
+          description: Judge0 language ID
+        stdin:
+          type: array
+          items:
+            type: string
+            maxLength: 1000
+          minItems: 1
+          maxItems: 50
+          description: Input values for each test case
+        expectedOutput:
+          type: array
+          items:
+            type: string
+            maxLength: 1000
+          minItems: 1
+          maxItems: 50
+          description: Expected output values for each test case
+        problemId:
+          type: string
+          format: uuid
+          description: Related problem ID for the submission
+
+    SubmissionWithTestCaseResults:
+      allOf:
+        - $ref: "#/components/schemas/Submission"
+        - type: object
+          properties:
+            testCaseResults:
+              type: array
+              items:
+                $ref: "#/components/schemas/TestCaseResult"
+              description: Results for each testcase
+
+    CodeExecutionResponse:
+      type: object
+      properties:
+        submission:
+          $ref: "#/components/schemas/SubmissionWithTestCaseResults"
 
 paths:
-  /:
+  /health-check:
     get:
-      summary: Home route
+      summary: Health check endpoint
+      description: Check if the server is running properly
       responses:
         "200":
-          description: Success response
+          description: Server is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ok"
+                  statusCode:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: "Health check successful"
+                  timestamp:
+                    type: string
+                    example: "5/15/2026, 12:00:00 PM"
 
-  /error:
-    get:
-      summary: Test error route
+  /api/v1/auth/register:
+    post:
+      summary: Register a new user
+      description: Create a new user account and send email verification
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
       responses:
+        "201":
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          user:
+                            $ref: "#/components/schemas/User"
+        "400":
+          description: Bad request - validation error or user already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         "500":
-          description: Error response
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/auth/verify-email/{verificationToken}:
+    get:
+      summary: Verify user email
+      description: Verify user's email address using the verification token sent via email
+      tags:
+        - Authentication
+      parameters:
+        - name: verificationToken
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Email verification token
+      responses:
+        "200":
+          description: Email verified successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+        "400":
+          description: Invalid or expired verification token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/auth/login:
+    post:
+      summary: User login
+      description: Authenticate user and return access/refresh tokens
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/LoginResponse"
+          headers:
+            Set-Cookie:
+              description: HTTP-only cookies containing access and refresh tokens
+              schema:
+                type: string
+        "400":
+          description: Bad request - missing credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Invalid credentials or unverified email
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/auth/refresh-token:
+    post:
+      summary: Refresh access token
+      description: Generate new access and refresh tokens using a valid refresh token
+      tags:
+        - Authentication
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RefreshTokenRequest"
+      responses:
+        "200":
+          description: Tokens refreshed successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/RefreshTokenResponse"
+          headers:
+            Set-Cookie:
+              description: HTTP-only cookies containing new access and refresh tokens
+              schema:
+                type: string
+        "401":
+          description: Invalid or missing refresh token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/auth/logout:
+    post:
+      summary: User logout
+      description: Logout user by clearing refresh token and cookies
+      tags:
+        - Authentication
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+          headers:
+            Set-Cookie:
+              description: Clears access and refresh token cookies
+              schema:
+                type: string
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/auth/get-user-profile:
+    get:
+      summary: Get current user profile
+      description: Retrieve the profile information of the authenticated user
+      tags:
+        - Authentication
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          user:
+                            $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/auth/resend-verification-email:
+    post:
+      summary: Resend email verification
+      description: Resend email verification link to user's email address
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResendVerificationRequest"
+      responses:
+        "200":
+          description: Verification email sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+        "400":
+          description: Bad request or email already verified
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/auth/forgot-password:
+    post:
+      summary: Forgot password
+      description: Send password reset link to user's email address
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ForgotPasswordRequest"
+      responses:
+        "200":
+          description: Password reset link sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/auth/reset-password/{verificationToken}:
+    post:
+      summary: Reset password
+      description: Reset user's password using the reset token sent via email
+      tags:
+        - Authentication
+      parameters:
+        - name: verificationToken
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Password reset token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResetPasswordRequest"
+      responses:
+        "200":
+          description: Password reset successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+        "400":
+          description: Invalid token or bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/auth/update-profile:
+    patch:
+      summary: Update user profile
+      description: Update authenticated user's profile information including name, username, and profile image
+      tags:
+        - Authentication
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                fullName:
+                  type: string
+                  minLength: 2
+                  description: Updated full name
+                username:
+                  type: string
+                  minLength: 3
+                  description: Updated username
+                image:
+                  type: string
+                  format: binary
+                  description: Profile image file
+      responses:
+        "200":
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          user:
+                            $ref: "#/components/schemas/User"
+        "400":
+          description: Bad request or validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/auth/change-password:
+    post:
+      summary: Change password
+      description: Change authenticated user's password
+      tags:
+        - Authentication
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangePasswordRequest"
+      responses:
+        "200":
+          description: Password changed successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+          headers:
+            Set-Cookie:
+              description: Clears access and refresh token cookies (requires re-login)
+              schema:
+                type: string
+        "400":
+          description: Bad request or validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/auth/admin/get-all-users:
+    get:
+      summary: Get all users (Admin only)
+      description: Retrieve paginated list of all users with optional filtering and sorting (Admin access required)
+      tags:
+        - Authentication
+        - Admin
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number for pagination
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 10
+          description: Number of users per page
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Search term for fullName, username, or email
+        - name: role
+          in: query
+          schema:
+            type: string
+            enum: [ADMIN, USER]
+          description: Filter by user role
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            default: createdAt
+          description: Field to sort by
+        - name: order
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+          description: Sort order
+      responses:
+        "200":
+          description: Users retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/UsersListResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden - Admin access required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/problems/create-problem:
+    post:
+      summary: Create a new problem (Admin only)
+      description: Create a new coding problem with test cases, examples, and reference solutions. Requires admin privileges.
+      tags:
+        - Problems
+        - Admin
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateProblemRequest"
+      responses:
+        "201":
+          description: Problem created successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          problem:
+                            $ref: "#/components/schemas/Problem"
+        "400":
+          description: Bad request - validation error or invalid reference solutions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden - Admin access required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/problems/get-all-problems:
+    get:
+      summary: Get all problems
+      description: Retrieve a list of all available coding problems
+      tags:
+        - Problems
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Problems retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/ProblemsListResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/problems/get-problem/{id}:
+    get:
+      summary: Get problem by ID
+      description: Retrieve a specific coding problem by its unique identifier
+      tags:
+        - Problems
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Unique identifier of the problem
+      responses:
+        "200":
+          description: Problem retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          problem:
+                            $ref: "#/components/schemas/Problem"
+        "400":
+          description: Bad request - invalid problem ID format
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Problem not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/problems/update-problem/{id}:
+    put:
+      summary: Update problem by ID (Admin only)
+      description: Update an existing coding problem. Requires admin privileges.
+      tags:
+        - Problems
+        - Admin
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Unique identifier of the problem to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateProblemRequest"
+      responses:
+        "200":
+          description: Problem updated successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          problem:
+                            $ref: "#/components/schemas/Problem"
+        "400":
+          description: Bad request - validation error or invalid reference solutions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden - Admin access required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Problem not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/problems/delete-problem/{id}:
+    delete:
+      summary: Delete problem by ID (Admin only)
+      description: Delete a coding problem by its unique identifier. Requires admin privileges.
+      tags:
+        - Problems
+        - Admin
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Unique identifier of the problem to delete
+      responses:
+        "200":
+          description: Problem deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+        "400":
+          description: Bad request - invalid problem ID format
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden - Admin access required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Problem not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/problems/get-all-solved-problems:
+    post:
+      summary: Get all solved problems for current user
+      description: Retrieve all problems that have been solved by the authenticated user
+      tags:
+        - Problems
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Solved problems retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/SolvedProblemsResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/submission/get-all-submissions:
+    get:
+      summary: Get all submissions for the authenticated user
+      description: Retrieve every submission made by the current authenticated user
+      tags:
+        - Submissions
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Submissions retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/SubmissionsListResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/submission/get-submissions-for-problem/{problemId}:
+    get:
+      summary: Get submissions for a specific problem
+      description: Retrieve submissions for a problem by the authenticated user
+      tags:
+        - Submissions
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      parameters:
+        - name: problemId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Problem ID to filter submissions
+      responses:
+        "200":
+          description: Submissions for the problem retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/SubmissionsListResponse"
+        "400":
+          description: Bad request - invalid problem ID format
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/submission/get-count-of-submissions-for-problem/{problemId}:
+    get:
+      summary: Get count of submissions for a problem
+      description: Retrieve how many submissions exist for the specified problem
+      tags:
+        - Submissions
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      parameters:
+        - name: problemId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Problem ID to count submissions for
+      responses:
+        "200":
+          description: Submission count retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/SubmissionCountResponse"
+        "400":
+          description: Bad request - invalid problem ID format
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/playlist/create-playlist:
+    post:
+      summary: Create a playlist
+      description: Create a new playlist for the authenticated user
+      tags:
+        - Playlists
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePlaylistRequest"
+      responses:
+        "201":
+          description: Playlist created successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          playlist:
+                            $ref: "#/components/schemas/Playlist"
+        "400":
+          description: Bad request - title required or invalid data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/playlist/get-all-playlists:
+    get:
+      summary: Get all playlists for current user
+      description: Retrieve all playlists created by the authenticated user
+      tags:
+        - Playlists
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Playlists fetched successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/PlaylistsResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/playlist/get-playlist/{playlistId}:
+    get:
+      summary: Get playlist details
+      description: Retrieve a single playlist and its included problems
+      tags:
+        - Playlists
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      parameters:
+        - name: playlistId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Playlist ID to retrieve
+      responses:
+        "200":
+          description: Playlist details fetched successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/PlaylistDetailsResponse"
+        "400":
+          description: Bad request - invalid playlist ID format
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Playlist not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/playlist/{playlistId}/add-problem:
+    post:
+      summary: Add problems to playlist
+      description: Add one or more problem IDs to the specified playlist
+      tags:
+        - Playlists
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      parameters:
+        - name: playlistId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Playlist ID to add problems to
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProblemIdsRequest"
+      responses:
+        "200":
+          description: Problems added to playlist successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          problemsInPlaylist:
+                            type: object
+                            description: Result object containing created playlist entries
+        "400":
+          description: Bad request - invalid problem IDs or playlist ID
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/playlist/delete-playlist/{playlistId}:
+    delete:
+      summary: Delete a playlist
+      description: Delete a playlist by its ID
+      tags:
+        - Playlists
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      parameters:
+        - name: playlistId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Playlist ID to delete
+      responses:
+        "200":
+          description: Playlist deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+        "400":
+          description: Bad request - invalid playlist ID format
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Playlist not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/playlist/{playlistId}/remove-problem:
+    delete:
+      summary: Remove problems from playlist
+      description: Remove one or more problems from the specified playlist
+      tags:
+        - Playlists
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      parameters:
+        - name: playlistId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Playlist ID to remove problems from
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProblemIdsRequest"
+      responses:
+        "200":
+          description: Problems removed from playlist successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          deletedProblemsInPlaylist:
+                            type: object
+                            description: Result object containing deleted playlist entries
+        "400":
+          description: Bad request - invalid playlist ID or problem IDs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Playlist not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/code-execution:
+    post:
+      summary: Execute code for a problem
+      description: Execute source code against input testcases and record the submission result
+      tags:
+        - Execution
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CodeExecutionRequest"
+      responses:
+        "200":
+          description: Code execution completed successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      submission:
+                        $ref: "#/components/schemas/SubmissionWithTestCaseResults"
+        "400":
+          description: Bad request - invalid input or mismatched testcases
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
