@@ -450,10 +450,9 @@ const forgotPassword = asyncHandler(async (req: Request, res: Response) => {
 
   const { verificationToken, hashedToken, expiry } =
     generateEmailVerificationToken();
-  const baseUrl =
-    process.env.APP_BASE_URL || `${req.protocol}://${req.get("host")}`;
+  const frontendUrl = env.FRONTEND_URL;
 
-  const emailVerificationUrl = `${baseUrl}/api/v1/auth/reset-password/${verificationToken}`;
+  const resetPasswordUrl = `${frontendUrl}/reset-password/${verificationToken}`;
 
   await prisma.user.update({
     where: { id: user.id },
@@ -469,7 +468,7 @@ const forgotPassword = asyncHandler(async (req: Request, res: Response) => {
     mailgenContent: forgotPasswordTemplate(
       user.fullName,
       user.username,
-      emailVerificationUrl,
+      resetPasswordUrl,
     ),
   });
 
@@ -525,7 +524,15 @@ const resetPassword = asyncHandler(async (req: Request, res: Response) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, null, "Password reset successfully"));
+    .clearCookie("accessToken", cookieOptions)
+    .clearCookie("refreshToken", cookieOptions)
+    .json(
+      new ApiResponse(
+        200,
+        null,
+        "Password reset successfully. Please log in with your new password.",
+      ),
+    );
 });
 
 const updateUserProfile = asyncHandler(async (req: Request, res: Response) => {
