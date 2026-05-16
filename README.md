@@ -1,4 +1,4 @@
-# Welcome to CodeArena Backend 👋
+# 🚀 CodeArena Backend
 
 <p align="center">
   <img alt="Version" src="https://img.shields.io/badge/version-1.0.0-blue.svg?cacheSeconds=2592000" />
@@ -20,54 +20,63 @@
 
 ## 📖 Overview
 
-**CodeArena Backend** is a scalable backend application for a competitive programming platform. It exposes RESTful APIs for authentication, problem management, and administration of coding content while using modern tooling such as **Express**, **Prisma**, and **PostgreSQL**.
+**CodeArena** is a powerful, highly scalable backend application designed to power a modern competitive programming platform. Built with **Node.js, Express, TypeScript, Prisma, and PostgreSQL**, it exposes a robust set of RESTful APIs to manage users, coding problems, code compilation, and evaluation.
 
-### ✨ Key Highlights
-
-- **User Authentication:** JWT-based login, refresh token support, email verification, and password reset.
-- **Problem Management:** Create, read, update, and delete coding problems with tags, examples, constraints, and editorial data.
-- **Swagger Documentation:** Built-in API documentation at `/api-docs`.
-- **Health Check:** Ready-to-use endpoint for uptime monitoring.
-- **Prisma ORM:** Strong type-safe database access.
-- **Modular Architecture:** Clear separation between controllers, routes, middlewares, services, and utils.
+By integrating with the **Judge0 API**, CodeArena can execute code in real-time, matching user outputs against strict test cases, memory limits, and time constraints.
 
 ---
 
-## 🛠 Features
+## ✨ Key Features
 
-- 🔐 Secure authentication and authorization
-- 🧠 CRUD operations for coding problems
-- 📦 File and request validation via middleware
-- 📧 Email workflows for verification and password reset
-- ⚠️ Centralized error handling
-- 🌐 CORS support with configurable origins
-- 📊 Swagger/OpenAPI documentation
+### 🔐 Authentication & Authorization
+
+- **JWT-based Security:** Secure login flow with short-lived access tokens and robust refresh token rotation.
+- **Role-Based Access Control (RBAC):** Distinct `USER` and `ADMIN` privileges.
+- **Account Recovery & Verification:** Secure email verification workflows and password reset via `nodemailer` and `mailgen`.
+
+### 🧠 Problem & Content Management
+
+- **Extensive Problem Model:** Support for difficulty levels, tags, hints, runtime constraints, examples, hidden testcases, and reference solutions.
+- **Admin Dashboard APIs:** Powerful CRUD endpoints strictly guarded for administrators to build the platform's question bank.
+
+### ⚙️ Code Execution Engine (Judge0)
+
+- **Open-Source Powerhouse:** Powered by **Judge0**, a robust, open-source online code execution system.
+- **Real-Time Code Evaluation:** Users submit code that gets routed securely to the Judge0 execution environment for compilation and execution.
+- **Automated Grading:** Compares output with expected answers, capturing `stdout`, `stderr`, memory usage, compilation status, and execution time.
+- **Submission History:** Persistent tracking of user attempts, test case results, and problem resolution status.
+
+### 📁 Playlists & Curation
+
+- Users can create, update, and delete **Problem Playlists**.
+- Bookmark and organize coding problems for structured learning paths.
+
+### 🛠 Architecture & Dev Experience
+
+- **Code Quality & Formatting:** Automated linting and formatting strictly maintained via **ESLint** and **Prettier**.
+- **Git Hooks:** Enforced pre-commit checks and formatting using **Husky** alongside **lint-staged**.
+- **Validation:** Strict, type-safe request parsing using **Zod** schema validation.
+- **Centralized Error Handling:** Consistent API error responses avoiding unhandled exceptions.
+- **Logging:** Advanced request and error logging powered by **Winston** and **Morgan**.
+- **Media Uploads:** Seamless image uploads (like user avatars) stored safely via **Cloudinary**.
+- **API Documentation:** Fully documented with **Swagger UI**.
 
 ---
 
-## Technologies Used
+## 💻 Tech Stack
 
-- **Node.js**
-- **Express.js**
-- **Prisma**
-- **PostgreSQL**
-- **TypeScript**
-- **Swagger**
-- **bcrypt**
-- **jsonwebtoken**
-- **nodemailer**
-- **cloudinary**
-- **winston**
-- **morgan**
-
----
-
-## Database Schema
-
-The backend uses Prisma schema models for `User` and `Problem`, including:
-
-- `User` with authentication fields, profile data, role, refresh tokens, email verification, and password reset flow.
-- `Problem` with title, description, difficulty, tags, hints, constraints, examples, testcases, code snippets, and reference solutions.
+| Category                | Technology                        |
+| :---------------------- | :-------------------------------- |
+| **Runtime & Framework** | Node.js, Express.js (v5)          |
+| **Language**            | TypeScript                        |
+| **Database & ORM**      | PostgreSQL, Prisma ORM            |
+| **Code Execution**      | Judge0 API                        |
+| **Validation**          | Zod                               |
+| **Authentication**      | JSON Web Tokens (JWT), bcrypt     |
+| **Cloud & Media**       | Cloudinary, Multer                |
+| **Mail Services**       | Nodemailer, Mailgen               |
+| **Logging**             | Winston, Morgan                   |
+| **Documentation**       | Swagger UI (`swagger-ui-express`) |
 
 ---
 
@@ -75,107 +84,135 @@ The backend uses Prisma schema models for `User` and `Problem`, including:
 
 ### Prerequisites
 
-- Node.js (v16+ recommended)
-- npm
-- PostgreSQL
+Ensure you have the following installed on your local machine:
+
+- **Node.js** (v18 or higher recommended)
+- **npm** or **yarn**
+- **PostgreSQL** database instance
+- **Judge0** (Self-hosted or Cloud API Key)
+- **Cloudinary** Account
 
 ### Installation
 
-```bash
-# Clone the repository
-git clone https://github.com/vishalrathore8oct/codearena-server.git
-cd codearena-server
+1. **Clone the repository:**
 
-# Install dependencies
-npm install
+   ```bash
+   git clone https://github.com/vishalrathore8oct/codearena-server.git
+   cd codearena-server
+   ```
 
-# Create your .env file and configure environment variables
-cp env.sample .env
+2. **Install dependencies:**
 
-# Run Prisma migrations
-npx prisma migrate dev
+   ```bash
+   npm install
+   ```
 
-# Start the development server
-npm run dev
-```
+3. **Configure Environment Variables:**
+
+   ```bash
+   cp env.sample .env
+   ```
+
+   _Edit `.env` and fill in your database, JWT, SMTP, Judge0, and Cloudinary credentials. (See Environment Variables section below)._
+
+4. **Initialize Database:**
+
+   ```bash
+   # Run Prisma migrations and generate Prisma Client
+   npx prisma migrate dev
+   npx prisma generate
+   ```
+
+5. **Start the Development Server:**
+   ```bash
+   npm run dev
+   ```
 
 ---
 
 ## ⚙️ Environment Variables
 
-Create a `.env` file based on `env.sample` and configure values for your environment:
+Your `.env` file should look like this:
 
 ```env
-PORT=8000
+# Application Settings
+PORT=4000
 NODE_ENV=development
-CORS_ORIGINS=*
-APP_BASE_URL=http://localhost:8000
-DATABASE_URL=postgresql://USER:PASSWORD@HOST:PORT/DATABASE
-ACCESS_TOKEN_SECRET=<your_access_token_secret>
+CORS_ORIGINS=http://localhost:5173
+APP_BASE_URL=http://localhost:4000
+FRONTEND_URL=http://localhost:5173
+
+# Database configuration
+DATABASE_URL=your_database_url
+
+# Authentication secrets
+ACCESS_TOKEN_SECRET=your_super_secret_access_key
 ACCESS_TOKEN_EXPIRES_IN=1h
-REFRESH_TOKEN_SECRET=<your_refresh_token_secret>
+REFRESH_TOKEN_SECRET=your_super_secret_refresh_key
 REFRESH_TOKEN_EXPIRES_IN=14d
-SMTP_HOST=<smtp_host>
-SMTP_PORT=<smtp_port>
-SMTP_USERNAME=<smtp_user>
-SMTP_PASSWORD=<smtp_password>
-CLOUDINARY_CLOUD_NAME=<cloud_name>
-CLOUDINARY_API_KEY=<cloudinary_api_key>
-CLOUDINARY_API_SECRET=<cloudinary_api_secret>
+
+# Nodemailer / SMTP config
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=your_email@gmail.com
+SMTP_PASSWORD=your_app_password
+
+# Cloudinary Setup
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+
+# Code Execution Engine
+JUDGE0_API_URL=your_judge0_api_url
 ```
 
 ---
 
-## 📜 API Documentation (Swagger UI)
+## 📜 API Documentation
 
-Once the server is running, explore the API via Swagger:
+Once your server is running, you can explore, test, and interact with the endpoints directly through the built-in Swagger UI dashboard:
 
-```bash
-http://localhost:4000/api-docs
-```
+**Navigate to:**  
+👉 `http://localhost:4000/api-docs`
 
 ---
 
 ## 📂 Project Structure
 
+A clean, modular, and scalable folder structure:
+
 ```
 server/
+├── prisma/                 # Database schema and migrations
+│   └── schema.prisma       # Prisma models (User, Problem, Submission, etc.)
 ├── src/
-│   ├── app.ts
-│   ├── main.ts
-│   ├── config/
-│   │   └── env.ts
-│   ├── controllers/
-│   │   ├── auth.controllers.ts
-│   │   └── problem.controllers.ts
-│   ├── middlewares/
-│   ├── routes/
-│   ├── services/
-│   ├── utils/
-│   └── validations/
-├── prisma/
-│   ├── schema.prisma
-│   └── migrations/
-├── generated/
-│   └── prisma/
-├── env.sample
+│   ├── config/             # Environment & App configs
+│   ├── controllers/        # Route logic & request handling
+│   ├── db/                 # Database connection utilities
+│   ├── logger/             # Winston logger configuration
+│   ├── middlewares/        # Auth, Validation, File Upload, Error Handling
+│   ├── routes/             # Express API route definitions
+│   ├── services/           # External service integration (Email, Judge0)
+│   ├── types/              # Global TypeScript types & interfaces
+│   ├── utils/              # Helpers (ApiError, ApiResponse, Tokens, etc.)
+│   ├── validations/        # Zod validation schemas
+│   ├── app.ts              # Express App setup & middleware injection
+│   └── main.ts             # Server entry point
 ├── package.json
-└── README.md
+└── env.sample
 ```
 
 ---
 
 ## 🔧 Scripts
 
-| Task                     | Command                  |
-| ------------------------ | ------------------------ |
-| Start development server | `npm run dev`            |
-| Build production code    | `npm run build`          |
-| Start production server  | `npm start`              |
-| Run lint                 | `npm run lint`           |
-| Format code              | `npm run format`         |
-| Run Prisma migrations    | `npx prisma migrate dev` |
-| Generate Prisma client   | `npx prisma generate`    |
+| Task           | Command          | Description                                      |
+| :------------- | :--------------- | :----------------------------------------------- |
+| **Start Dev**  | `npm run dev`    | Starts server with `tsx watch` for hot-reloading |
+| **Build**      | `npm run build`  | Compiles TypeScript down to standard JavaScript  |
+| **Start Prod** | `npm start`      | Runs the compiled application (`dist/main.js`)   |
+| **Lint**       | `npm run lint`   | Lints the codebase using ESLint                  |
+| **Format**     | `npm run format` | Formats files using Prettier                     |
 
 ---
 
@@ -183,22 +220,22 @@ server/
 
 **Vishal Rathore**
 
-- GitHub: https://github.com/vishalrathore8oct
-- X: https://x.com/vishalrathore66
-- LinkedIn: https://www.linkedin.com/in/vishalrathore8oct/
-- Blog: https://vishalrathore.hashnode.dev/
+- GitHub: [@vishalrathore8oct](https://github.com/vishalrathore8oct)
+- X / Twitter: [@vishalrathore66](https://x.com/vishalrathore66)
+- LinkedIn: [Vishal Rathore](https://www.linkedin.com/in/vishalrathore8oct/)
+- Blog: [vishalrathore.hashnode.dev](https://vishalrathore.hashnode.dev/)
 
 ---
 
 ## 🤝 Contributing
 
-Contributions, issues, and feature requests are welcome. Feel free to open an issue or submit a pull request.
+Contributions, issues, and feature requests are always welcome! Feel free to check the [issues page](https://github.com/vishalrathore8oct/codearena-server/issues) or submit a pull request.
 
 ---
 
 ## ⭐ Show Your Support
 
-If this project helped you, give it a ⭐️ on GitHub!
+If this project helped you or you learned something new, please give it a ⭐️ on GitHub!
 
 ---
 
