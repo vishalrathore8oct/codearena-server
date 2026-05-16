@@ -1805,7 +1805,7 @@ paths:
 
   /api/v1/submission/get-submissions-for-problem/{problemId}:
     get:
-      summary: Get submissions for a specific problem
+      summary: Get submissions of the authenticated user for a specific problem
       description: Retrieve submissions for a problem by the authenticated user
       tags:
         - Submissions
@@ -1853,7 +1853,7 @@ paths:
 
   /api/v1/submission/get-count-of-submissions-for-problem/{problemId}:
     get:
-      summary: Get count of submissions for a problem
+      summary: Get Total count of submissions for a problem
       description: Retrieve how many submissions exist for the specified problem
       tags:
         - Submissions

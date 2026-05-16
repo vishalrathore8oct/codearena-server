@@ -246,5 +246,251 @@
 
       "JAVA": "import java.util.*;\nclass Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int n = sc.nextInt();\n        int sign = n < 0 ? -1 : 1;\n        n = Math.abs(n);\n        int rev = 0;\n        while (n > 0) {\n            rev = rev * 10 + (n % 10);\n            n /= 10;\n        }\n        System.out.println(rev * sign);\n    }\n}"
     }
+  },
+
+  {
+    "title": "Find Minimum of Two Numbers",
+    "description": "Given two integers a and b, return the smaller of the two numbers.",
+    "difficulty": "EASY",
+    "tags": ["math", "comparison", "conditional"],
+
+    "hints": [
+      "Use comparison operators.",
+      "Check which number is smaller using an if condition."
+    ],
+
+    "constraints": ["-10^9 ≤ a, b ≤ 10^9"],
+
+    "examples": [
+      {
+        "input": "8 3",
+        "output": "3",
+        "explanation": "3 is smaller than 8."
+      },
+      {
+        "input": "-5 -2",
+        "output": "-5",
+        "explanation": "-5 is smaller than -2."
+      }
+    ],
+
+    "testcases": [
+      { "input": "100 200", "output": "100" },
+      { "input": "-10 -50", "output": "-50" },
+      { "input": "0 0", "output": "0" }
+    ],
+
+    "codeSnippets": {
+      "JAVASCRIPT": "const fs = require('fs');\n\nfunction findMin(a, b) {\n    // Write your code here\n    if (a < b) return a;\n    return b;\n}\n\nconst input = fs.readFileSync(0, 'utf-8').trim();\nconst [a, b] = input.split(' ').map(Number);\n\nconsole.log(findMin(a, b));",
+
+      "PYTHON": "def find_min(a, b):\n    # Write your code here\n    if a < b:\n        return a\n    return b\n\nimport sys\ninput_line = sys.stdin.read()\na, b = map(int, input_line.split())\nprint(find_min(a, b))",
+
+      "JAVA": "import java.util.Scanner;\n\npublic class Main {\n    public static int findMin(int a, int b) {\n        // Write your code here\n        if (a < b) return a;\n        return b;\n    }\n\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int a = sc.nextInt();\n        int b = sc.nextInt();\n        System.out.println(findMin(a, b));\n    }\n}"
+    },
+
+    "referenceSolutions": {
+      "JAVASCRIPT": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim();\nconst [a, b] = input.split(' ').map(Number);\nconsole.log(Math.min(a, b));",
+
+      "PYTHON": "import sys\ninput_line = sys.stdin.read()\na, b = map(int, input_line.split())\nprint(min(a, b))",
+
+      "JAVA": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int a = sc.nextInt();\n        int b = sc.nextInt();\n        System.out.println(Math.min(a, b));\n    }\n}"
+    }
+  },
+
+  {
+    "title": "Calculate Square of a Number",
+    "description": "Given an integer n, return its square.",
+    "difficulty": "EASY",
+    "tags": ["math", "operators"],
+
+    "hints": ["Multiply the number by itself."],
+
+    "constraints": ["-10^5 ≤ n ≤ 10^5"],
+
+    "examples": [
+      {
+        "input": "5",
+        "output": "25",
+        "explanation": "5 × 5 = 25."
+      },
+      {
+        "input": "-4",
+        "output": "16",
+        "explanation": "(-4) × (-4) = 16."
+      }
+    ],
+
+    "testcases": [
+      { "input": "10", "output": "100" },
+      { "input": "-7", "output": "49" },
+      { "input": "0", "output": "0" }
+    ],
+
+    "codeSnippets": {
+      "JAVASCRIPT": "const fs = require('fs');\n\nfunction square(n) {\n    // Write your code here\n    return n * n;\n}\n\nconst n = Number(fs.readFileSync(0, 'utf-8').trim());\nconsole.log(square(n));",
+
+      "PYTHON": "def square(n):\n    # Write your code here\n    return n * n\n\nimport sys\nn = int(sys.stdin.read())\nprint(square(n))",
+
+      "JAVA": "import java.util.Scanner;\n\npublic class Main {\n    public static int square(int n) {\n        // Write your code here\n        return n * n;\n    }\n\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int n = sc.nextInt();\n        System.out.println(square(n));\n    }\n}"
+    },
+
+    "referenceSolutions": {
+      "JAVASCRIPT": "const fs = require('fs');\nconst n = Number(fs.readFileSync(0, 'utf-8').trim());\nconsole.log(n * n);",
+
+      "PYTHON": "import sys\nn = int(sys.stdin.read())\nprint(n * n)",
+
+      "JAVA": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int n = sc.nextInt();\n        System.out.println(n * n);\n    }\n}"
+    }
+  },
+
+  {
+    "title": "Calculate Cube of a Number",
+    "description": "Given an integer n, return its cube.",
+    "difficulty": "EASY",
+    "tags": ["math", "operators"],
+
+    "hints": ["Multiply the number by itself three times."],
+
+    "constraints": ["-10^4 ≤ n ≤ 10^4"],
+
+    "examples": [
+      {
+        "input": "3",
+        "output": "27",
+        "explanation": "3 × 3 × 3 = 27."
+      },
+      {
+        "input": "-2",
+        "output": "-8",
+        "explanation": "(-2) × (-2) × (-2) = -8."
+      }
+    ],
+
+    "testcases": [
+      { "input": "5", "output": "125" },
+      { "input": "-4", "output": "-64" },
+      { "input": "0", "output": "0" }
+    ],
+
+    "codeSnippets": {
+      "JAVASCRIPT": "const fs = require('fs');\n\nfunction cube(n) {\n    // Write your code here\n    return n * n * n;\n}\n\nconst n = Number(fs.readFileSync(0, 'utf-8').trim());\nconsole.log(cube(n));",
+
+      "PYTHON": "def cube(n):\n    # Write your code here\n    return n * n * n\n\nimport sys\nn = int(sys.stdin.read())\nprint(cube(n))",
+
+      "JAVA": "import java.util.Scanner;\n\npublic class Main {\n    public static int cube(int n) {\n        // Write your code here\n        return n * n * n;\n    }\n\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int n = sc.nextInt();\n        System.out.println(cube(n));\n    }\n}"
+    },
+
+    "referenceSolutions": {
+      "JAVASCRIPT": "const fs = require('fs');\nconst n = Number(fs.readFileSync(0, 'utf-8').trim());\nconsole.log(n * n * n);",
+
+      "PYTHON": "import sys\nn = int(sys.stdin.read())\nprint(n * n * n)",
+
+      "JAVA": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int n = sc.nextInt();\n        System.out.println(n * n * n);\n    }\n}"
+    }
+  },
+
+  {
+    "title": "Check Positive Negative or Zero",
+    "description": "Given an integer n, determine whether it is Positive, Negative, or Zero.",
+    "difficulty": "EASY",
+    "tags": ["math", "conditional"],
+
+    "hints": [
+      "Compare the number with 0.",
+      "If n > 0 return 'Positive'.",
+      "If n < 0 return 'Negative'.",
+      "Otherwise return 'Zero'."
+    ],
+
+    "constraints": ["-10^9 ≤ n ≤ 10^9"],
+
+    "examples": [
+      {
+        "input": "10",
+        "output": "Positive",
+        "explanation": "10 is greater than 0."
+      },
+      {
+        "input": "-7",
+        "output": "Negative",
+        "explanation": "-7 is less than 0."
+      },
+      {
+        "input": "0",
+        "output": "Zero",
+        "explanation": "The number is exactly 0."
+      }
+    ],
+
+    "testcases": [
+      { "input": "25", "output": "Positive" },
+      { "input": "-1", "output": "Negative" },
+      { "input": "0", "output": "Zero" }
+    ],
+
+    "codeSnippets": {
+      "JAVASCRIPT": "const fs = require('fs');\n\nfunction checkNumber(n) {\n    // Write your code here\n    if (n > 0) return 'Positive';\n    if (n < 0) return 'Negative';\n    return 'Zero';\n}\n\nconst n = Number(fs.readFileSync(0, 'utf-8').trim());\nconsole.log(checkNumber(n));",
+
+      "PYTHON": "def check_number(n):\n    # Write your code here\n    if n > 0:\n        return 'Positive'\n    if n < 0:\n        return 'Negative'\n    return 'Zero'\n\nimport sys\nn = int(sys.stdin.read())\nprint(check_number(n))",
+
+      "JAVA": "import java.util.Scanner;\n\npublic class Main {\n    public static String checkNumber(int n) {\n        // Write your code here\n        if (n > 0) return \"Positive\";\n        if (n < 0) return \"Negative\";\n        return \"Zero\";\n    }\n\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int n = sc.nextInt();\n        System.out.println(checkNumber(n));\n    }\n}"
+    },
+
+    "referenceSolutions": {
+      "JAVASCRIPT": "const fs = require('fs');\nconst n = Number(fs.readFileSync(0, 'utf-8').trim());\nif (n > 0) console.log('Positive');\nelse if (n < 0) console.log('Negative');\nelse console.log('Zero');",
+
+      "PYTHON": "import sys\nn = int(sys.stdin.read())\nif n > 0:\n    print('Positive')\nelif n < 0:\n    print('Negative')\nelse:\n    print('Zero')",
+
+      "JAVA": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int n = sc.nextInt();\n        if (n > 0) System.out.println(\"Positive\");\n        else if (n < 0) System.out.println(\"Negative\");\n        else System.out.println(\"Zero\");\n    }\n}"
+    }
+  },
+
+  {
+    "title": "Swap Two Numbers",
+    "description": "Given two integers a and b, output them after swapping their values.",
+    "difficulty": "EASY",
+    "tags": ["math", "variables"],
+
+    "hints": [
+      "Use a temporary variable.",
+      "Store one value before overwriting it."
+    ],
+
+    "constraints": ["-10^9 ≤ a, b ≤ 10^9"],
+
+    "examples": [
+      {
+        "input": "5 10",
+        "output": "10 5",
+        "explanation": "After swapping, a becomes 10 and b becomes 5."
+      },
+      {
+        "input": "-3 7",
+        "output": "7 -3",
+        "explanation": "The two values are exchanged."
+      }
+    ],
+
+    "testcases": [
+      { "input": "100 200", "output": "200 100" },
+      { "input": "0 5", "output": "5 0" },
+      { "input": "-1 -9", "output": "-9 -1" }
+    ],
+
+    "codeSnippets": {
+      "JAVASCRIPT": "const fs = require('fs');\n\nfunction swapNumbers(a, b) {\n    // Write your code here\n    let temp = a;\n    a = b;\n    b = temp;\n    return `${a} ${b}`;\n}\n\nconst input = fs.readFileSync(0, 'utf-8').trim();\nconst [a, b] = input.split(' ').map(Number);\nconsole.log(swapNumbers(a, b));",
+
+      "PYTHON": "def swap_numbers(a, b):\n    # Write your code here\n    temp = a\n    a = b\n    b = temp\n    return f\"{a} {b}\"\n\nimport sys\ninput_line = sys.stdin.read()\na, b = map(int, input_line.split())\nprint(swap_numbers(a, b))",
+
+      "JAVA": "import java.util.Scanner;\n\npublic class Main {\n    public static String swapNumbers(int a, int b) {\n        // Write your code here\n        int temp = a;\n        a = b;\n        b = temp;\n        return a + \" \" + b;\n    }\n\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int a = sc.nextInt();\n        int b = sc.nextInt();\n        System.out.println(swapNumbers(a, b));\n    }\n}"
+    },
+
+    "referenceSolutions": {
+      "JAVASCRIPT": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim();\nlet [a, b] = input.split(' ').map(Number);\n[a, b] = [b, a];\nconsole.log(`${a} ${b}`);",
+
+      "PYTHON": "import sys\ninput_line = sys.stdin.read()\na, b = map(int, input_line.split())\na, b = b, a\nprint(f\"{a} {b}\")",
+
+      "JAVA": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int a = sc.nextInt();\n        int b = sc.nextInt();\n        int temp = a;\n        a = b;\n        b = temp;\n        System.out.println(a + \" \" + b);\n    }\n}"
+    }
   }
 ]

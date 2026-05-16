@@ -12,6 +12,20 @@ const createPlaylist = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(400, "Title is required to create a playlist");
   }
 
+  const existingPlaylist = await prisma.playlist.findFirst({
+    where: {
+      userId,
+      title,
+    },
+  });
+
+  if (existingPlaylist) {
+    throw new ApiError(
+      400,
+      "A playlist with the same title already exists for the user",
+    );
+  }
+
   const playlist = await prisma.playlist.create({
     data: {
       title,
