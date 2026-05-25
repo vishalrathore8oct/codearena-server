@@ -115,19 +115,6 @@ Ensure you have the following installed on your local machine:
 
    _Edit `.env` and fill in your database, JWT, SMTP, Judge0, and Cloudinary credentials. (See Environment Variables section below)._
 
-4. **Initialize Database:**
-
-   ```bash
-   # Run Prisma migrations and generate Prisma Client
-   npx prisma migrate dev
-   npx prisma generate
-   ```
-
-5. **Start the Development Server:**
-   ```bash
-   npm run dev
-   ```
-
 ---
 
 ## ⚙️ Environment Variables
@@ -163,8 +150,23 @@ CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
 
 # Code Execution Engine
-JUDGE0_API_URL=your_judge0_api_url
+JUDGE0_API_URL=http://localhost:2358/docs
 ```
+
+---
+
+4. **Initialize Database:**
+
+   ```bash
+   # Run Prisma migrations and generate Prisma Client
+   npx prisma generate
+   npx prisma migrate dev
+   ```
+
+5. **Start the Development Server:**
+   ```bash
+   npm run dev
+   ```
 
 ---
 
