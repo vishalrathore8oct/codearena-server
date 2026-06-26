@@ -377,7 +377,7 @@ components:
           type: string
           format: uuid
           description: Unique identifier for the test case result
-        testCase:
+        testcase:
           type: integer
           description: Test case number
         passed:
@@ -873,7 +873,7 @@ components:
         - $ref: "#/components/schemas/Submission"
         - type: object
           properties:
-            testCaseResults:
+            testcaseResults:
               type: array
               items:
                 $ref: "#/components/schemas/TestCaseResult"

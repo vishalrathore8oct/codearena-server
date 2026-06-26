@@ -52,7 +52,7 @@ problemRoutes.delete(
   deleteProblemById,
 );
 
-problemRoutes.post(
+problemRoutes.get(
   "/get-all-solved-problems",
   requireAuth,
   getAllSolvedProblems,

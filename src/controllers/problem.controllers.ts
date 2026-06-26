@@ -70,7 +70,7 @@ const createProblem = asyncHandler(async (req: Request, res: Response) => {
       if (result.status.id !== 3) {
         throw new ApiError(
           400,
-          `Testcase ${i + 1} failed for Language ${language}.`,
+          `testcase ${i + 1} failed for Language ${language}.`,
         );
       }
     }
@@ -198,7 +198,7 @@ const updateProblemById = asyncHandler(async (req: Request, res: Response) => {
       if (result.status.id !== 3) {
         throw new ApiError(
           400,
-          `Testcase ${i + 1} failed for Language ${language}.`,
+          `testcase ${i + 1} failed for Language ${language}.`,
         );
       }
     }

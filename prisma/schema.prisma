@@ -87,12 +87,12 @@ model Submission {
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   problem Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
 
-  testCaseResults TestCaseResult[]
+  testcaseResults TestCaseResult[]
 }
 
 model TestCaseResult {
   id             String  @id @default(uuid())
-  testCase       Int
+  testcase       Int
   passed         Boolean
   expectedOutput String?
   stdin          String?

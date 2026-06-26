@@ -43,14 +43,14 @@ const codeExecution = asyncHandler(async (req: Request, res: Response) => {
 
   let isAllPassed = true;
 
-  const testCaseResults = pollingSubmissionResult.map(
+  const testcaseResults = pollingSubmissionResult.map(
     (result: Judge0Response, index: number) => {
       const isPassed = result.stdout?.trim() === expectedOutput[index].trim();
       if (!isPassed) {
         isAllPassed = false;
       }
       return {
-        testCase: index + 1,
+        testcase: index + 1,
         passed: isPassed,
         expectedOutput: expectedOutput[index],
         stdin: stdin[index],
@@ -70,31 +70,31 @@ const codeExecution = asyncHandler(async (req: Request, res: Response) => {
       sourceCode,
       stdin: stdin.join("\n"),
       stdout: JSON.stringify(
-        testCaseResults.map((result: Judge0Response) => result.stdout),
+        testcaseResults.map((result: Judge0Response) => result.stdout),
       ),
-      stderr: testCaseResults.some((result: Judge0Response) => result.stderr)
+      stderr: testcaseResults.some((result: Judge0Response) => result.stderr)
         ? JSON.stringify(
-            testCaseResults.map((result: Judge0Response) => result.stderr),
+            testcaseResults.map((result: Judge0Response) => result.stderr),
           )
         : null,
-      compileOutput: testCaseResults.some(
+      compileOutput: testcaseResults.some(
         (result: Judge0Response) => result.compileOutput,
       )
         ? JSON.stringify(
-            testCaseResults.map(
+            testcaseResults.map(
               (result: Judge0Response) => result.compileOutput,
             ),
           )
         : null,
       status: isAllPassed ? "Accepted" : "Wrong Answer",
-      memory: testCaseResults.some((result: Judge0Response) => result.memory)
+      memory: testcaseResults.some((result: Judge0Response) => result.memory)
         ? JSON.stringify(
-            testCaseResults.map((result: Judge0Response) => result.memory),
+            testcaseResults.map((result: Judge0Response) => result.memory),
           )
         : null,
-      time: testCaseResults.some((result: Judge0Response) => result.time)
+      time: testcaseResults.some((result: Judge0Response) => result.time)
         ? JSON.stringify(
-            testCaseResults.map((result: Judge0Response) => result.time),
+            testcaseResults.map((result: Judge0Response) => result.time),
           )
         : null,
       userId: req.user.id,
@@ -118,21 +118,21 @@ const codeExecution = asyncHandler(async (req: Request, res: Response) => {
     });
   }
 
-  const testCaseResultswithSubmissionId = testCaseResults.map(
+  const testcaseResultswithSubmissionId = testcaseResults.map(
     (result: Judge0Response) => ({
       ...result,
       submissionId: submission.id,
     }),
   );
 
-  await prisma.testCaseResult.createMany({
-    data: testCaseResultswithSubmissionId,
+  await prisma.testcaseResult.createMany({
+    data: testcaseResultswithSubmissionId,
   });
 
   const submissionWithTestCaseResults = await prisma.submission.findUnique({
     where: { id: submission.id },
     include: {
-      testCaseResults: true,
+      testcaseResults: true,
     },
   });
 
