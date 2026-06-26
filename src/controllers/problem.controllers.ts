@@ -105,7 +105,13 @@ const createProblem = asyncHandler(async (req: Request, res: Response) => {
 });
 
 const getAllProblems = asyncHandler(async (req: Request, res: Response) => {
-  const problems = await prisma.problem.findMany();
+  const problems = await prisma.problem.findMany({
+    include: {
+      solvedProblems: {
+        where: { userId: req.user.id },
+      },
+    },
+  });
 
   if (!problems || problems.length === 0) {
     return res
