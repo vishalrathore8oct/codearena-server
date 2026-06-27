@@ -44,10 +44,9 @@ const register = asyncHandler(async (req: Request, res: Response) => {
 
   const { verificationToken, hashedToken, expiry } =
     generateEmailVerificationToken();
-  const baseUrl =
-    process.env.APP_BASE_URL || `${req.protocol}://${req.get("host")}`;
+  const frontendUrl = env.FRONTEND_URL;
 
-  const emailVerificationUrl = `${baseUrl}/api/v1/auth/verify-email/${verificationToken}`;
+  const emailVerificationUrl = `${frontendUrl}/verify-email/${verificationToken}`;
 
   const profileImage = `https://ui-avatars.com/api/?name=${encodeURIComponent(
     fullName,
@@ -390,10 +389,9 @@ const resendVerificationEmail = asyncHandler(
 
     const { verificationToken, hashedToken, expiry } =
       generateEmailVerificationToken();
-    const baseUrl =
-      process.env.APP_BASE_URL || `${req.protocol}://${req.get("host")}`;
+    const frontendUrl = env.FRONTEND_URL;
 
-    const emailVerificationUrl = `${baseUrl}/api/v1/auth/verify-email/${verificationToken}`;
+    const emailVerificationUrl = `${frontendUrl}/verify-email/${verificationToken}`;
 
     await prisma.user.update({
       where: { id: user.id },
