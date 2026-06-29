@@ -8,7 +8,6 @@ import {
   pollingJudge0SubmissionBatchResult,
 } from "../utils/Judge0.utils.js";
 
-// Pending Controller Implementation - The actual implementation will happen in the next future commit.
 const codeExecution = asyncHandler(async (req: Request, res: Response) => {
   const { sourceCode, languageId, stdin, expectedOutput, problemId } = req.body;
 
