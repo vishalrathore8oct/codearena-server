@@ -125,7 +125,7 @@ const codeExecution = asyncHandler(async (req: Request, res: Response) => {
     }),
   );
 
-  await prisma.testcaseResult.createMany({
+  await prisma.testCaseResult.createMany({
     data: testcaseResultswithSubmissionId,
   });
 
