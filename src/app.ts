@@ -16,6 +16,7 @@ import problemRoutes from "./routes/problem.routes.js";
 import submissionRoutes from "./routes/submission.routes.js";
 
 const app = express();
+app.set("trust proxy", 1);
 
 app.use(morganMiddleware);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
