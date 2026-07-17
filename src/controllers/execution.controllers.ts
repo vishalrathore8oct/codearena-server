@@ -7,6 +7,7 @@ import {
   getJudge0LanguageName,
   pollingJudge0SubmissionBatchResult,
 } from "../utils/Judge0.utils.js";
+import { MESSAGES } from "../constant.js";
 
 const codeExecution = asyncHandler(async (req: Request, res: Response) => {
   const { sourceCode, languageId, stdin, expectedOutput, problemId } = req.body;
@@ -20,8 +21,7 @@ const codeExecution = asyncHandler(async (req: Request, res: Response) => {
     return res.status(400).json({
       status: "error",
       statusCode: 400,
-      message:
-        "Invalid or Missing testcases - 'stdin' and 'expectedOutput' must be non-empty arrays of the same length",
+      message: MESSAGES.INVALID_OR_MISSING_TESTCASES,
     });
   }
 
@@ -138,7 +138,7 @@ const codeExecution = asyncHandler(async (req: Request, res: Response) => {
   res.status(200).json({
     status: "success",
     statusCode: 200,
-    message: "Code executed successfully",
+    message: MESSAGES.CODE_EXECUTED_SUCCESSFULLY,
     submission: submissionWithTestCaseResults,
   });
 });

@@ -9,6 +9,7 @@ import {
   getJudge0LanguageId,
   pollingJudge0SubmissionBatchResult,
 } from "../utils/Judge0.utils.js";
+import { MESSAGES } from "../constant.js";
 
 const createProblem = asyncHandler(async (req: Request, res: Response) => {
   const {
@@ -26,25 +27,22 @@ const createProblem = asyncHandler(async (req: Request, res: Response) => {
   } = req.body;
 
   if (req.user.role !== "ADMIN") {
-    throw new ApiError(
-      403,
-      "Forbidden - User does not have the required role to create a problem",
-    );
+    throw new ApiError(403, MESSAGES.FORBIDDEN_CREATE_PROBLEM);
   }
 
   for (const [language, solutionCode] of Object.entries(referenceSolutions)) {
     if (!solutionCode) {
-      throw new ApiError(400, `Reference solution for ${language} is required`);
+      throw new ApiError(400, MESSAGES.REFERENCE_SOLUTION_REQUIRED(language));
     }
 
     const languageId = getJudge0LanguageId(language);
 
     if (!languageId) {
-      throw new ApiError(400, `Unsupported language: ${language}`);
+      throw new ApiError(400, MESSAGES.UNSUPPORTED_LANGUAGE(language));
     }
 
     if (!testcases || testcases.length === 0) {
-      throw new ApiError(400, "At least one testcase is required");
+      throw new ApiError(400, MESSAGES.TESTCASE_REQUIRED);
     }
 
     const submissions = testcases.map((testcase: Testcase) => ({
@@ -68,10 +66,7 @@ const createProblem = asyncHandler(async (req: Request, res: Response) => {
     for (let i = 0; i < pollingSubmissionResult.length; i++) {
       const result = pollingSubmissionResult[i];
       if (result.status.id !== 3) {
-        throw new ApiError(
-          400,
-          `testcase ${i + 1} failed for Language ${language}.`,
-        );
+        throw new ApiError(400, MESSAGES.TESTCASE_FAILED(i + 1, language));
       }
     }
   }
@@ -99,7 +94,7 @@ const createProblem = asyncHandler(async (req: Request, res: Response) => {
       new ApiResponse(
         201,
         { problem: newProblem },
-        "Problem created successfully",
+        MESSAGES.PROBLEM_CREATED_SUCCESSFULLY,
       ),
     );
 });
@@ -116,13 +111,17 @@ const getAllProblems = asyncHandler(async (req: Request, res: Response) => {
   if (!problems || problems.length === 0) {
     return res
       .status(200)
-      .json(new ApiResponse(200, { problems: [] }, "No problems found"));
+      .json(new ApiResponse(200, { problems: [] }, MESSAGES.NO_PROBLEMS_FOUND));
   }
 
   res
     .status(200)
     .json(
-      new ApiResponse(200, { problems }, "Problems retrieved successfully"),
+      new ApiResponse(
+        200,
+        { problems },
+        MESSAGES.PROBLEMS_RETRIEVED_SUCCESSFULLY,
+      ),
     );
 });
 
@@ -134,12 +133,18 @@ const getProblemById = asyncHandler(async (req: Request, res: Response) => {
   });
 
   if (!problem) {
-    throw new ApiError(404, "Problem not found");
+    throw new ApiError(404, MESSAGES.PROBLEM_NOT_FOUND);
   }
 
   res
     .status(200)
-    .json(new ApiResponse(200, { problem }, "Problem retrieved successfully"));
+    .json(
+      new ApiResponse(
+        200,
+        { problem },
+        MESSAGES.PROBLEM_RETRIEVED_SUCCESSFULLY,
+      ),
+    );
 });
 
 const updateProblemById = asyncHandler(async (req: Request, res: Response) => {
@@ -160,25 +165,22 @@ const updateProblemById = asyncHandler(async (req: Request, res: Response) => {
   } = req.body;
 
   if (req.user.role !== "ADMIN") {
-    throw new ApiError(
-      403,
-      "Forbidden - User does not have the required role to update a problem",
-    );
+    throw new ApiError(403, MESSAGES.FORBIDDEN_UPDATE_PROBLEM);
   }
 
   for (const [language, solutionCode] of Object.entries(referenceSolutions)) {
     if (!solutionCode) {
-      throw new ApiError(400, `Reference solution for ${language} is required`);
+      throw new ApiError(400, MESSAGES.REFERENCE_SOLUTION_REQUIRED(language));
     }
 
     const languageId = getJudge0LanguageId(language);
 
     if (!languageId) {
-      throw new ApiError(400, `Unsupported language: ${language}`);
+      throw new ApiError(400, MESSAGES.UNSUPPORTED_LANGUAGE(language));
     }
 
     if (!testcases || testcases.length === 0) {
-      throw new ApiError(400, "At least one testcase is required");
+      throw new ApiError(400, MESSAGES.TESTCASE_REQUIRED);
     }
 
     const submissions = testcases.map((testcase: Testcase) => ({
@@ -202,10 +204,7 @@ const updateProblemById = asyncHandler(async (req: Request, res: Response) => {
     for (let i = 0; i < pollingSubmissionResult.length; i++) {
       const result = pollingSubmissionResult[i];
       if (result.status.id !== 3) {
-        throw new ApiError(
-          400,
-          `testcase ${i + 1} failed for Language ${language}.`,
-        );
+        throw new ApiError(400, MESSAGES.TESTCASE_FAILED(i + 1, language));
       }
     }
   }
@@ -233,7 +232,7 @@ const updateProblemById = asyncHandler(async (req: Request, res: Response) => {
       new ApiResponse(
         200,
         { problem: updatedProblem },
-        "Problem updated successfully",
+        MESSAGES.PROBLEM_UPDATED_SUCCESSFULLY,
       ),
     );
 });
@@ -242,10 +241,7 @@ const deleteProblemById = asyncHandler(async (req: Request, res: Response) => {
   const id = req.params.id as string;
 
   if (req.user.role !== "ADMIN") {
-    throw new ApiError(
-      403,
-      "Forbidden - User does not have the required role to delete a problem",
-    );
+    throw new ApiError(403, MESSAGES.FORBIDDEN_DELETE_PROBLEM);
   }
 
   const problem = await prisma.problem.findUnique({
@@ -253,7 +249,7 @@ const deleteProblemById = asyncHandler(async (req: Request, res: Response) => {
   });
 
   if (!problem) {
-    throw new ApiError(404, "Problem not found");
+    throw new ApiError(404, MESSAGES.PROBLEM_NOT_FOUND);
   }
 
   await prisma.problem.delete({
@@ -262,7 +258,7 @@ const deleteProblemById = asyncHandler(async (req: Request, res: Response) => {
 
   res
     .status(200)
-    .json(new ApiResponse(200, null, "Problem deleted successfully"));
+    .json(new ApiResponse(200, null, MESSAGES.PROBLEM_DELETED_SUCCESSFULLY));
 });
 
 const getAllSolvedProblems = asyncHandler(
@@ -286,7 +282,7 @@ const getAllSolvedProblems = asyncHandler(
         new ApiResponse(
           200,
           { solvedProblems },
-          "Solved problems retrieved successfully",
+          MESSAGES.SOLVED_PROBLEMS_RETRIEVED_SUCCESSFULLY,
         ),
       );
   },

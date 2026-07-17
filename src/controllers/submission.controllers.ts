@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import { prisma } from "../db/prisma.js";
 import { ApiResponse } from "../utils/ApiResponse.utils.js";
 import { asyncHandler } from "../utils/asyncHandler.utils.js";
+import { MESSAGES } from "../constant.js";
 
 const getAllSubmissions = asyncHandler(async (req: Request, res: Response) => {
   const userId = req.user?.id;
@@ -18,7 +19,7 @@ const getAllSubmissions = asyncHandler(async (req: Request, res: Response) => {
       new ApiResponse(
         200,
         { submissions },
-        "Submissions retrieved successfully",
+        MESSAGES.SUBMISSIONS_RETRIEVED_SUCCESSFULLY,
       ),
     );
 });
@@ -41,7 +42,7 @@ const getSubmissionsForProblem = asyncHandler(
         new ApiResponse(
           200,
           { submissions },
-          "Submissions for the problem retrieved successfully",
+          MESSAGES.PROBLEM_SUBMISSIONS_RETRIEVED_SUCCESSFULLY,
         ),
       );
   },
@@ -63,7 +64,7 @@ const getCountOfSubmissionsForProblem = asyncHandler(
         new ApiResponse(
           200,
           { submissionsCount },
-          "Count of submissions for the problem retrieved successfully",
+          MESSAGES.SUBMISSION_COUNT_RETRIEVED_SUCCESSFULLY,
         ),
       );
   },

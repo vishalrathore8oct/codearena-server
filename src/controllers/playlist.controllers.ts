@@ -3,13 +3,14 @@ import { prisma } from "../db/prisma.js";
 import { ApiError } from "../utils/ApiError.utils.js";
 import { ApiResponse } from "../utils/ApiResponse.utils.js";
 import { asyncHandler } from "../utils/asyncHandler.utils.js";
+import { MESSAGES } from "../constant.js";
 
 const createPlaylist = asyncHandler(async (req: Request, res: Response) => {
   const userId = req.user?.id;
   const { title, description } = req.body;
 
   if (!title) {
-    throw new ApiError(400, "Title is required to create a playlist");
+    throw new ApiError(400, MESSAGES.PLAYLIST_TITLE_REQUIRED);
   }
 
   const existingPlaylist = await prisma.playlist.findFirst({
@@ -20,10 +21,7 @@ const createPlaylist = asyncHandler(async (req: Request, res: Response) => {
   });
 
   if (existingPlaylist) {
-    throw new ApiError(
-      400,
-      "A playlist with the same title already exists for the user",
-    );
+    throw new ApiError(400, MESSAGES.PLAYLIST_ALREADY_EXISTS);
   }
 
   const playlist = await prisma.playlist.create({
@@ -36,7 +34,13 @@ const createPlaylist = asyncHandler(async (req: Request, res: Response) => {
 
   res
     .status(201)
-    .json(new ApiResponse(201, { playlist }, "Playlist created successfully"));
+    .json(
+      new ApiResponse(
+        201,
+        { playlist },
+        MESSAGES.PLAYLIST_CREATED_SUCCESSFULLY,
+      ),
+    );
 });
 
 const getAllPlaylistDetails = asyncHandler(
@@ -57,7 +61,11 @@ const getAllPlaylistDetails = asyncHandler(
     res
       .status(200)
       .json(
-        new ApiResponse(200, { playlists }, "Playlists fetched successfully"),
+        new ApiResponse(
+          200,
+          { playlists },
+          MESSAGES.PLAYLISTS_FETCHED_SUCCESSFULLY,
+        ),
       );
   },
 );
@@ -81,7 +89,7 @@ const getPlaylistDetails = asyncHandler(async (req: Request, res: Response) => {
   });
 
   if (!playlist) {
-    throw new ApiError(404, "Playlist not found");
+    throw new ApiError(404, MESSAGES.PLAYLIST_NOT_FOUND);
   }
 
   res
@@ -90,7 +98,7 @@ const getPlaylistDetails = asyncHandler(async (req: Request, res: Response) => {
       new ApiResponse(
         200,
         { playlist },
-        "Playlist details fetched successfully",
+        MESSAGES.PLAYLIST_DETAILS_FETCHED_SUCCESSFULLY,
       ),
     );
 });
@@ -101,7 +109,7 @@ const addProblemToPlaylist = asyncHandler(
     const { problemIds } = req.body;
 
     if (!problemIds || !Array.isArray(problemIds) || problemIds.length === 0) {
-      throw new ApiError(400, "problemIds must be a non-empty array");
+      throw new ApiError(400, MESSAGES.PROBLEM_IDS_REQUIRED_ARRAY);
     }
 
     const problemsInPlaylist = await prisma.problemInPlaylist.createMany({
@@ -118,7 +126,7 @@ const addProblemToPlaylist = asyncHandler(
         new ApiResponse(
           200,
           { problemsInPlaylist },
-          "Problems added to playlist successfully",
+          MESSAGES.PROBLEMS_ADDED_TO_PLAYLIST_SUCCESSFULLY,
         ),
       );
   },
@@ -135,7 +143,7 @@ const deletePlaylist = asyncHandler(async (req: Request, res: Response) => {
 
   res
     .status(200)
-    .json(new ApiResponse(200, null, "Playlist deleted successfully"));
+    .json(new ApiResponse(200, null, MESSAGES.PLAYLIST_DELETED_SUCCESSFULLY));
 });
 
 const removeProblemFromPlaylist = asyncHandler(
@@ -144,7 +152,7 @@ const removeProblemFromPlaylist = asyncHandler(
     const { problemIds } = req.body;
 
     if (!problemIds || !Array.isArray(problemIds) || problemIds.length === 0) {
-      throw new ApiError(400, "problemIds must be a non-empty array");
+      throw new ApiError(400, MESSAGES.PROBLEM_IDS_REQUIRED_ARRAY);
     }
 
     const deletedProblemsInPlaylist = await prisma.problemInPlaylist.deleteMany(
@@ -164,7 +172,7 @@ const removeProblemFromPlaylist = asyncHandler(
         new ApiResponse(
           200,
           { deletedProblemsInPlaylist },
-          "Problems removed from playlist successfully",
+          MESSAGES.PROBLEMS_REMOVED_FROM_PLAYLIST_SUCCESSFULLY,
         ),
       );
   },

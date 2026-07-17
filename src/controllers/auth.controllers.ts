@@ -4,7 +4,7 @@ import type { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import type { Prisma } from "../../generated/prisma/client.js";
 import { env } from "../config/env.js";
-import { appName, cookieOptions } from "../constant.js";
+import { appName, cookieOptions, MESSAGES } from "../constant.js";
 import { prisma } from "../db/prisma.js";
 import { sendEmail } from "../services/email.service.js";
 import type { AuthUser } from "../types/auth.types.js";
@@ -35,7 +35,7 @@ const register = asyncHandler(async (req: Request, res: Response) => {
   });
 
   if (existingUser) {
-    throw new ApiError(400, "User already exists with this email");
+    throw new ApiError(400, MESSAGES.USER_ALREADY_EXISTS);
   }
 
   const username = await generateUniqueUsernameForDB(fullName);
@@ -86,11 +86,7 @@ const register = asyncHandler(async (req: Request, res: Response) => {
   return res
     .status(201)
     .json(
-      new ApiResponse(
-        201,
-        { user },
-        "Users registered successfully and verification email has been sent on your email. Please verify your email to activate your account.",
-      ),
+      new ApiResponse(201, { user }, MESSAGES.USER_REGISTERED_SUCCESSFULLY),
     );
 });
 
@@ -98,7 +94,7 @@ const verifyEmail = asyncHandler(async (req: Request, res: Response) => {
   const verificationToken = req.params.verificationToken as string;
 
   if (!verificationToken) {
-    throw new ApiError(400, "Verification token is missing");
+    throw new ApiError(400, MESSAGES.VERIFICATION_TOKEN_MISSING);
   }
 
   const hashedToken = crypto
@@ -116,7 +112,7 @@ const verifyEmail = asyncHandler(async (req: Request, res: Response) => {
   });
 
   if (!user) {
-    throw new ApiError(400, "Invalid or expired verification token");
+    throw new ApiError(400, MESSAGES.INVALID_OR_EXPIRED_VERIFICATION_TOKEN);
   }
 
   await prisma.user.update({
@@ -130,20 +126,14 @@ const verifyEmail = asyncHandler(async (req: Request, res: Response) => {
 
   return res
     .status(200)
-    .json(
-      new ApiResponse(
-        200,
-        null,
-        "Email verified successfully. You can now log in to your account.",
-      ),
-    );
+    .json(new ApiResponse(200, null, MESSAGES.EMAIL_VERIFIED_SUCCESSFULLY));
 });
 
 const login = asyncHandler(async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    throw new ApiError(400, "Email and password are required");
+    throw new ApiError(400, MESSAGES.EMAIL_AND_PASSWORD_REQUIRED);
   }
 
   const user = await prisma.user.findUnique({
@@ -151,20 +141,17 @@ const login = asyncHandler(async (req: Request, res: Response) => {
   });
 
   if (!user) {
-    throw new ApiError(401, "Invalid email or password");
+    throw new ApiError(401, MESSAGES.INVALID_EMAIL_OR_PASSWORD);
   }
 
   if (!user.isEmailVerified) {
-    throw new ApiError(
-      401,
-      "Please verify your email to activate your account before logging in",
-    );
+    throw new ApiError(401, MESSAGES.PLEASE_VERIFY_EMAIL_TO_LOGIN);
   }
 
   const isPasswordValid = await bcrypt.compare(password, user.password);
 
   if (!isPasswordValid) {
-    throw new ApiError(401, "Invalid email or password");
+    throw new ApiError(401, MESSAGES.INVALID_EMAIL_OR_PASSWORD);
   }
 
   const accessToken = generateAccessToken(user.id, user.role);
@@ -207,7 +194,7 @@ const login = asyncHandler(async (req: Request, res: Response) => {
           accessToken,
           refreshToken,
         },
-        "User logged in successfully",
+        MESSAGES.USER_LOGGED_IN_SUCCESSFULLY,
       ),
     );
 });
@@ -231,7 +218,7 @@ const refreshAccessToken = asyncHandler(async (req: Request, res: Response) => {
   }
 
   if (!incomingRefreshToken) {
-    throw new ApiError(401, "Refresh token is required");
+    throw new ApiError(401, MESSAGES.REFRESH_TOKEN_REQUIRED);
   }
 
   let decoded: AuthUser;
@@ -242,7 +229,7 @@ const refreshAccessToken = asyncHandler(async (req: Request, res: Response) => {
       env.REFRESH_TOKEN_SECRET,
     ) as AuthUser;
   } catch {
-    throw new ApiError(401, "Invalid or expired refresh token");
+    throw new ApiError(401, MESSAGES.INVALID_OR_EXPIRED_REFRESH_TOKEN);
   }
 
   const user = await prisma.user.findUnique({
@@ -250,13 +237,13 @@ const refreshAccessToken = asyncHandler(async (req: Request, res: Response) => {
   });
 
   if (!user || !user.refreshToken) {
-    throw new ApiError(401, "User not found or no refresh token stored");
+    throw new ApiError(401, MESSAGES.USER_NOT_FOUND_OR_NO_REFRESH_TOKEN);
   }
 
   const isValid = await bcrypt.compare(incomingRefreshToken, user.refreshToken);
 
   if (!isValid) {
-    throw new ApiError(401, "Refresh token mismatch or reused token detected");
+    throw new ApiError(401, MESSAGES.REFRESH_TOKEN_MISMATCH);
   }
 
   const newAccessToken = generateAccessToken(user.id, user.role);
@@ -286,7 +273,7 @@ const refreshAccessToken = asyncHandler(async (req: Request, res: Response) => {
           accessToken: newAccessToken,
           refreshToken: newRefreshToken,
         },
-        "Access token refreshed or rotated successfully",
+        MESSAGES.ACCESS_TOKEN_REFRESHED_SUCCESSFULLY,
       ),
     );
 });
@@ -327,14 +314,14 @@ const logout = asyncHandler(async (req: Request, res: Response) => {
     .status(200)
     .clearCookie("accessToken", cookieOptions)
     .clearCookie("refreshToken", cookieOptions)
-    .json(new ApiResponse(200, null, "User logged out successfully"));
+    .json(new ApiResponse(200, null, MESSAGES.USER_LOGGED_OUT_SUCCESSFULLY));
 });
 
 const getUserProfile = asyncHandler(async (req: Request, res: Response) => {
   const userId = req.user?.id;
 
   if (!userId) {
-    throw new ApiError(401, "Unauthorized");
+    throw new ApiError(401, MESSAGES.UNAUTHORIZED);
   }
 
   const user = await prisma.user.findUnique({
@@ -353,7 +340,7 @@ const getUserProfile = asyncHandler(async (req: Request, res: Response) => {
   });
 
   if (!user) {
-    throw new ApiError(404, "User not found");
+    throw new ApiError(404, MESSAGES.USER_NOT_FOUND);
   }
 
   return res.status(200).json(
@@ -362,7 +349,7 @@ const getUserProfile = asyncHandler(async (req: Request, res: Response) => {
       {
         user,
       },
-      "Current user profile fetched successfully",
+      MESSAGES.CURRENT_USER_PROFILE_FETCHED_SUCCESSFULLY,
     ),
   );
 });
@@ -372,7 +359,7 @@ const resendVerificationEmail = asyncHandler(
     const { email } = req.body;
 
     if (!email) {
-      throw new ApiError(400, "Email is required");
+      throw new ApiError(400, MESSAGES.EMAIL_REQUIRED);
     }
 
     const user = await prisma.user.findUnique({
@@ -380,11 +367,11 @@ const resendVerificationEmail = asyncHandler(
     });
 
     if (!user) {
-      throw new ApiError(404, "User not found");
+      throw new ApiError(404, MESSAGES.USER_NOT_FOUND);
     }
 
     if (user.isEmailVerified) {
-      throw new ApiError(400, "Email is already verified");
+      throw new ApiError(400, MESSAGES.EMAIL_ALREADY_VERIFIED);
     }
 
     const { verificationToken, hashedToken, expiry } =
@@ -417,7 +404,7 @@ const resendVerificationEmail = asyncHandler(
         new ApiResponse(
           200,
           null,
-          "Verification email Resent on your email successfully. Please verify your email to activate your account.",
+          MESSAGES.VERIFICATION_EMAIL_RESENT_SUCCESSFULLY,
         ),
       );
   },
@@ -427,7 +414,7 @@ const forgotPassword = asyncHandler(async (req: Request, res: Response) => {
   const { email } = req.body;
 
   if (!email) {
-    throw new ApiError(400, "Email is required");
+    throw new ApiError(400, MESSAGES.EMAIL_REQUIRED);
   }
 
   const user = await prisma.user.findUnique({
@@ -438,11 +425,7 @@ const forgotPassword = asyncHandler(async (req: Request, res: Response) => {
     return res
       .status(200)
       .json(
-        new ApiResponse(
-          200,
-          null,
-          "If an account exists, a password reset link has been sent",
-        ),
+        new ApiResponse(200, null, MESSAGES.PASSWORD_RESET_LINK_SENT_IF_EXISTS),
       );
   }
 
@@ -476,7 +459,7 @@ const forgotPassword = asyncHandler(async (req: Request, res: Response) => {
       new ApiResponse(
         200,
         null,
-        "Password reset link has been sent to your email successfully. Please check your email to reset your password.",
+        MESSAGES.PASSWORD_RESET_LINK_SENT_SUCCESSFULLY,
       ),
     );
 });
@@ -486,11 +469,11 @@ const resetPassword = asyncHandler(async (req: Request, res: Response) => {
   const { password } = req.body;
 
   if (!verificationToken) {
-    throw new ApiError(400, "Reset token is required");
+    throw new ApiError(400, MESSAGES.RESET_TOKEN_REQUIRED);
   }
 
   if (!password) {
-    throw new ApiError(400, "New password is required");
+    throw new ApiError(400, MESSAGES.NEW_PASSWORD_REQUIRED);
   }
 
   const hashedToken = hashToken(verificationToken);
@@ -505,7 +488,7 @@ const resetPassword = asyncHandler(async (req: Request, res: Response) => {
   });
 
   if (!user) {
-    throw new ApiError(400, "Invalid or expired reset token");
+    throw new ApiError(400, MESSAGES.INVALID_OR_EXPIRED_RESET_TOKEN);
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -524,13 +507,7 @@ const resetPassword = asyncHandler(async (req: Request, res: Response) => {
     .status(200)
     .clearCookie("accessToken", cookieOptions)
     .clearCookie("refreshToken", cookieOptions)
-    .json(
-      new ApiResponse(
-        200,
-        null,
-        "Password reset successfully. Please log in with your new password.",
-      ),
-    );
+    .json(new ApiResponse(200, null, MESSAGES.PASSWORD_RESET_SUCCESSFULLY));
 });
 
 const updateUserProfile = asyncHandler(async (req: Request, res: Response) => {
@@ -541,7 +518,7 @@ const updateUserProfile = asyncHandler(async (req: Request, res: Response) => {
   let imageUrl: string | undefined;
 
   if (!userId) {
-    throw new ApiError(401, "Unauthorized User");
+    throw new ApiError(401, MESSAGES.UNAUTHORIZED_USER);
   }
 
   const user = await prisma.user.findUnique({
@@ -549,7 +526,7 @@ const updateUserProfile = asyncHandler(async (req: Request, res: Response) => {
   });
 
   if (!user) {
-    throw new ApiError(404, "User not found");
+    throw new ApiError(404, MESSAGES.USER_NOT_FOUND);
   }
 
   if (req.file) {
@@ -565,10 +542,7 @@ const updateUserProfile = asyncHandler(async (req: Request, res: Response) => {
     });
 
     if (existing && existing.id !== userId) {
-      throw new ApiError(
-        400,
-        "Username already taken, please try with another one",
-      );
+      throw new ApiError(400, MESSAGES.USERNAME_ALREADY_TAKEN);
     }
   }
 
@@ -598,7 +572,7 @@ const updateUserProfile = asyncHandler(async (req: Request, res: Response) => {
       new ApiResponse(
         200,
         { user: updatedUser },
-        "User profile updated successfully",
+        MESSAGES.USER_PROFILE_UPDATED_SUCCESSFULLY,
       ),
     );
 });
@@ -609,11 +583,11 @@ const changePassword = asyncHandler(async (req: Request, res: Response) => {
   const { currentPassword, newPassword } = req.body;
 
   if (!userId) {
-    throw new ApiError(401, "Unauthorized");
+    throw new ApiError(401, MESSAGES.UNAUTHORIZED);
   }
 
   if (!currentPassword || !newPassword) {
-    throw new ApiError(400, "Current and new password are required");
+    throw new ApiError(400, MESSAGES.CURRENT_AND_NEW_PASSWORD_REQUIRED);
   }
 
   const user = await prisma.user.findUnique({
@@ -621,22 +595,19 @@ const changePassword = asyncHandler(async (req: Request, res: Response) => {
   });
 
   if (!user) {
-    throw new ApiError(404, "User not found");
+    throw new ApiError(404, MESSAGES.USER_NOT_FOUND);
   }
 
   const isMatch = await bcrypt.compare(currentPassword, user.password);
 
   if (!isMatch) {
-    throw new ApiError(400, "Current password is incorrect");
+    throw new ApiError(400, MESSAGES.CURRENT_PASSWORD_INCORRECT);
   }
 
   const isSame = await bcrypt.compare(newPassword, user.password);
 
   if (isSame) {
-    throw new ApiError(
-      400,
-      "New password must be different from current password",
-    );
+    throw new ApiError(400, MESSAGES.NEW_PASSWORD_MUST_BE_DIFFERENT);
   }
 
   const hashedPassword = await bcrypt.hash(newPassword, 10);
@@ -653,13 +624,7 @@ const changePassword = asyncHandler(async (req: Request, res: Response) => {
     .status(200)
     .clearCookie("accessToken", cookieOptions)
     .clearCookie("refreshToken", cookieOptions)
-    .json(
-      new ApiResponse(
-        200,
-        null,
-        "Password changed successfully. Please login again.",
-      ),
-    );
+    .json(new ApiResponse(200, null, MESSAGES.PASSWORD_CHANGED_SUCCESSFULLY));
 });
 
 const getAllUsers = asyncHandler(async (req: Request, res: Response) => {
@@ -740,7 +705,7 @@ const getAllUsers = asyncHandler(async (req: Request, res: Response) => {
           limit,
         },
       },
-      "Users fetched successfully",
+      MESSAGES.USERS_FETCHED_SUCCESSFULLY,
     ),
   );
 });
