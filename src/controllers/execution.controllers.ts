@@ -1,16 +1,17 @@
 import type { Request, Response } from "express";
+import { MESSAGES } from "../constant.js";
 import { prisma } from "../db/prisma.js";
-import type { Judge0Response } from "../types/judge0.types.js";
+import type { Judge0Response, TestCaseResult } from "../types/judge0.types.js";
 import { asyncHandler } from "../utils/asyncHandler.utils.js";
 import {
   createJudge0SubmissionBatch,
   getJudge0LanguageName,
   pollingJudge0SubmissionBatchResult,
 } from "../utils/Judge0.utils.js";
-import { MESSAGES } from "../constant.js";
 
 const codeExecution = asyncHandler(async (req: Request, res: Response) => {
-  const { sourceCode, languageId, stdin, expectedOutput, problemId } = req.body;
+  const { sourceCode, languageId, stdin, expectedOutput, problemId, isSubmit } =
+    req.body;
 
   if (
     !Array.isArray(stdin) ||
@@ -62,6 +63,52 @@ const codeExecution = asyncHandler(async (req: Request, res: Response) => {
       };
     },
   );
+
+  if (!isSubmit) {
+    const mockSubmission = {
+      language: getJudge0LanguageName(languageId),
+      sourceCode,
+      stdin: stdin.join("\n"),
+      stdout: JSON.stringify(
+        testcaseResults.map((result: TestCaseResult) => result.stdout),
+      ),
+      stderr: testcaseResults.some((result: TestCaseResult) => result.stderr)
+        ? JSON.stringify(
+            testcaseResults.map((result: TestCaseResult) => result.stderr),
+          )
+        : null,
+      compileOutput: testcaseResults.some(
+        (result: TestCaseResult) => result.compileOutput,
+      )
+        ? JSON.stringify(
+            testcaseResults.map(
+              (result: TestCaseResult) => result.compileOutput,
+            ),
+          )
+        : null,
+      status: isAllPassed ? "Accepted" : "Wrong Answer",
+      memory: testcaseResults.some((result: TestCaseResult) => result.memory)
+        ? JSON.stringify(
+            testcaseResults.map((result: TestCaseResult) => result.memory),
+          )
+        : null,
+      time: testcaseResults.some((result: TestCaseResult) => result.time)
+        ? JSON.stringify(
+            testcaseResults.map((result: TestCaseResult) => result.time),
+          )
+        : null,
+      userId: req.user.id,
+      problemId,
+      testcaseResults: testcaseResults,
+    };
+
+    return res.status(200).json({
+      status: "success",
+      statusCode: 200,
+      message: MESSAGES.CODE_RUN_SUCCESSFULLY,
+      submission: mockSubmission,
+    });
+  }
 
   const submission = await prisma.submission.create({
     data: {
@@ -138,7 +185,7 @@ const codeExecution = asyncHandler(async (req: Request, res: Response) => {
   res.status(200).json({
     status: "success",
     statusCode: 200,
-    message: MESSAGES.CODE_EXECUTED_SUCCESSFULLY,
+    message: MESSAGES.CODE_SUBMITTED_SUCCESSFULLY,
     submission: submissionWithTestCaseResults,
   });
 });

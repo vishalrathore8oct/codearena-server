@@ -69,7 +69,8 @@ const MESSAGES = {
   // Execution
   INVALID_OR_MISSING_TESTCASES:
     "Invalid or Missing testcases - 'stdin' and 'expectedOutput' must be non-empty arrays of the same length",
-  CODE_EXECUTED_SUCCESSFULLY: "Code executed successfully",
+  CODE_RUN_SUCCESSFULLY: "Code run successfully",
+  CODE_SUBMITTED_SUCCESSFULLY: "Code submitted successfully",
 
   // Playlist
   PLAYLIST_TITLE_REQUIRED: "Title is required to create a playlist",
@@ -119,5 +120,5 @@ const MESSAGES = {
     "Count of submissions for the problem retrieved successfully",
 };
 
-export { appName, cookieOptions, USER_ROLES, MESSAGES };
+export { appName, cookieOptions, MESSAGES, USER_ROLES };
 export type { UserRole };

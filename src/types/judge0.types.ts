@@ -33,3 +33,16 @@ export interface Testcase {
   input: string;
   output: string;
 }
+
+export interface TestCaseResult {
+  testcase: number;
+  passed: boolean;
+  expectedOutput: string;
+  stdin: string;
+  stdout: string | null;
+  stderr: string | null;
+  compileOutput: string | null;
+  status: string;
+  memory: string | undefined;
+  time: string | undefined;
+}

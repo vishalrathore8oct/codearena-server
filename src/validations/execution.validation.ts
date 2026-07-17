@@ -35,6 +35,7 @@ const codeExecutionSchema = z.object({
         .max(50, "Too many expected outputs (maximum 50 allowed)"),
 
       problemId: z.uuid("Invalid problem ID format"),
+      isSubmit: z.boolean().optional(),
     })
     .refine((data) => data.stdin.length === data.expectedOutput.length, {
       message: "stdin and expectedOutput must have the same number of items",
