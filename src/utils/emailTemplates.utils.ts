@@ -17,7 +17,10 @@ const emailVerificationTemplate = (
         link: verificationUrl,
       },
     },
-    outro: "If you didn’t create this account, ignore this email.",
+    outro: [
+      "This verification link will expire in 15 minutes.",
+      "If you didn’t create this account, ignore this email.",
+    ],
   },
 });
 
@@ -37,7 +40,10 @@ const forgotPasswordTemplate = (
         link: resetUrl,
       },
     },
-    outro: "If you didn’t request this, ignore it.",
+    outro: [
+      "This password reset link will expire in 15 minutes.",
+      "If you didn’t request this, ignore it.",
+    ],
   },
 });
 
