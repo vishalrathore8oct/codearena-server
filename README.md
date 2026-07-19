@@ -20,9 +20,9 @@
 
 ## 📖 Overview
 
-**CodeArena** is a powerful, highly scalable backend application designed to power a modern competitive programming platform. Built with **Node.js, Express, TypeScript, Prisma, and PostgreSQL**, it exposes a robust set of RESTful APIs to manage users, coding problems, code compilation, and evaluation.
+**DevArena** is a powerful, highly scalable backend application designed to power a modern competitive programming platform. Built with **Node.js, Express, TypeScript, Prisma, and PostgreSQL**, it exposes a robust set of RESTful APIs to manage users, coding problems, code compilation, and evaluation.
 
-By integrating with the **Judge0 API**, CodeArena can execute code in real-time, matching user outputs against strict test cases, memory limits, and time constraints.
+By integrating with the **Judge0 API**, DevArena can execute code in real-time, matching user outputs against strict test cases, memory limits, and time constraints.
 
 ---
 

@@ -1,8 +1,8 @@
 openapi: 3.0.0
 info:
-  title: CodeArena API
+  title: DevArena API
   version: 1.0.0
-  description: API documentation for CodeArena Backend - A competitive programming platform
+  description: API documentation for DevArena Backend - A competitive programming platform
 
 servers:
   - url: http://localhost:4000

@@ -1,7 +1,7 @@
 {
-  "name": "codearena-server",
+  "name": "devarena-server",
   "version": "1.0.0",
-  "description": "CodeArena Backend is a powerful and scalable backend application designed to support a competitive programming platform. It provides a comprehensive set of RESTful APIs for managing users, coding problems, playlists, submissions, and code execution.",
+  "description": "DevArena Backend is a powerful and scalable backend application designed to support a competitive programming platform. It provides a comprehensive set of RESTful APIs for managing users, coding problems, playlists, submissions, and code execution.",
   "type": "module",
   "main": "src/main.js",
   "scripts": {

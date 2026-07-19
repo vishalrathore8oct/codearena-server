@@ -1,6 +1,6 @@
 import type { CookieOptions } from "express";
 
-const appName = "CodeArena";
+const appName = "DevArena";
 
 const cookieOptions: CookieOptions = {
   httpOnly: true,
